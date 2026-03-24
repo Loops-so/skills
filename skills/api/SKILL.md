@@ -17,6 +17,25 @@ metadata:
 
 This skill helps you use the Loops REST API to manage contacts, send events, and dispatch transactional emails from your own code.
 
+## When to Use
+
+Use this skill when the user needs to integrate Loops into an app, backend, automation, or webhook flow. Reach for it when the task involves contacts, mailing lists, transactional emails, event-triggered email automation, or SDK/API implementation details.
+
+## Working Style
+
+When this skill is active:
+
+- Prefer an official Loops SDK when the user's language or framework has one.
+- Keep all Loops API calls server-side.
+- Verify exact request and response shapes against the official docs or OpenAPI spec when details matter.
+- Use idempotency keys for retry-prone event and transactional email flows.
+
+Official references:
+
+- Docs: `https://loops.so/docs`
+- API reference: `https://loops.so/docs/api-reference/intro`
+- OpenAPI spec: `https://app.loops.so/openapi.json`
+
 ## Authentication
 
 Every request needs your Loops API key as a Bearer token.
