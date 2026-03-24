@@ -9,6 +9,7 @@ This repository packages reusable skills for the `skills` CLI and the `skills.sh
 | Skill | What it covers |
 | --- | --- |
 | [`api`](./skills/api/SKILL.md) | Use the Loops API to manage contacts, create contact properties, work with mailing lists, send events, and send transactional emails. Includes authentication, rate limits, idempotency, and example implementations. |
+| [`email-sending-best-practices`](./skills/email-sending-best-practices/SKILL.md) | Review and improve email sending quality across deliverability, consent, design, lifecycle strategy, and transactional-vs-marketing decisions. Generic by default, with Loops-specific caveats and defaults. |
 
 ## Install
 
@@ -18,6 +19,9 @@ npx skills add https://github.com/Loops-so/skills --list
 
 # Install the API skill
 npx skills add https://github.com/Loops-so/skills --skill api
+
+# Install the email best-practices skill
+npx skills add https://github.com/Loops-so/skills --skill email-sending-best-practices
 ```
 
 ## When To Use The `api` Skill
@@ -59,4 +63,7 @@ If you are updating API guidance, check the live docs and OpenAPI spec before me
 skills/
   api/
     SKILL.md
+  email-sending-best-practices/
+    SKILL.md
+    references/
 ```
