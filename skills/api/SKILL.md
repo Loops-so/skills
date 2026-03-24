@@ -49,13 +49,11 @@ https://app.loops.so/api
 Loops has official SDKs that handle auth, retries, and TypeScript types for you:
 
 - **JavaScript/TypeScript**: `npm install loops` — works in Node.js and edge runtimes
-- **Nuxt**: `@nuxtjs/loops`
-- **PHP**: `loops-php`
-- **Ruby**: `loops-ruby`
+- **Nuxt**: `npm install nuxt-loops`
+- **PHP**: `composer require loops-so/loops`
+- **Ruby**: `gem install loops_sdk`
 
 When the user is working in one of these languages, prefer the SDK over raw HTTP requests.
-
-There is currently no cli for Loops but it is in development.
 
 ---
 
@@ -315,9 +313,12 @@ await loops.sendEvent({
 });
 
 // Create a contact
-await loops.createContact("user@example.com", {
-  firstName: "Alex",
-  userGroup: "premium",
+await loops.createContact({
+  email: "user@example.com",
+  properties: {
+    firstName: "Alex",
+    userGroup: "premium",
+  },
   mailingLists: { list_123: true },
 });
 
