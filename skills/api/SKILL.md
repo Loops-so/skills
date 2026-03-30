@@ -101,6 +101,8 @@ PUT /v1/contacts/update
 
 Same body shape as create. Must include `email` or `userId` to identify the contact. Works as an upsert — if the contact doesn't exist, it will be created.
 
+If you need to change a contact's email address, the contact must already have a `userId`. Send the update request with that `userId` and the new `email` value.
+
 #### Find a contact
 
 ```
@@ -161,7 +163,7 @@ POST /v1/contacts/properties
 
 ```json
 {
-  "name": "plan_tier", // required
+  "name": "planTier", // required — use camelCase
   "type": "string" // required: "string", "number", "boolean", or "date"
 }
 ```
