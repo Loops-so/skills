@@ -5,7 +5,7 @@
 - https://github.com/Loops-so/cli
 - https://github.com/Loops-so/cli/blob/main/README.md
 
-The Loops CLI README explicitly says this is pre-release alpha software and that `loops --help` should be treated as the source of truth for exact features and flags.
+Use `loops --help` and command-specific help output when you need exact flags or the latest command shape.
 
 ## When To Use The CLI
 

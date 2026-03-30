@@ -38,7 +38,7 @@ When this skill is active:
 3. Prefer official SDKs for application code when the language has one.
 4. Prefer raw HTTP only when no SDK is available or the user needs exact payload control.
 5. Keep Loops requests server-side.
-6. Verify exact behavior against the official docs, OpenAPI spec, or `loops --help` when details matter.
+6. Verify exact behavior against the official docs, OpenAPI spec, or command help when details matter.
 
 Official references:
 
