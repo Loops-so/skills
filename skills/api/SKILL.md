@@ -77,7 +77,7 @@ Returns `{ success: true, teamName: "..." }` on success. Use this to confirm cre
 POST /v1/contacts/create
 ```
 
-```json
+```jsonc
 {
   "email": "user@example.com", // required
   "firstName": "Alex",
@@ -210,7 +210,7 @@ POST /v1/events/send
 
 Events trigger email automations you've built in Loops. The event name must match exactly what you've configured in the Loops dashboard.
 
-```json
+```jsonc
 {
   "email": "user@example.com", // either email or userId is required to identify contact
   "userId": "usr_123",
@@ -273,7 +273,7 @@ Paginated list of published transactional emails. `perPage` must be between 10 a
 POST /v1/transactional
 ```
 
-```json
+```jsonc
 {
   "email": "user@example.com", // required
   "transactionalId": "cll42l54f20i1la0lfooe3z12", // required — use the exact id from Loops dashboard or GET /v1/transactional
@@ -358,10 +358,10 @@ export async function POST(req: Request) {
 
 All Loops API calls must be server-side — the SDK blocks client-side use, and browser calls will fail with CORS errors.
 
-### Stripe webhook — firing a Loops event on checkout
+### Stripe webhook — App Router example
 
 ```typescript
-// pages/api/webhooks/stripe.ts (or app/api/webhooks/stripe/route.ts)
+// app/api/webhooks/stripe/route.ts
 import Stripe from "stripe";
 import { LoopsClient } from "loops";
 
@@ -394,6 +394,8 @@ export async function POST(req: Request) {
   return new Response("ok");
 }
 ```
+
+This example uses the Next.js App Router. If you're using the Pages Router, use the corresponding `pages/api` handler shape and disable body parsing so Stripe signature verification still works.
 
 ### Python (no official SDK — use requests)
 
@@ -455,7 +457,7 @@ Request body string values are limited to **500 characters**.
 ## Tips
 
 - **Upsert pattern**: Use `PUT /v1/contacts/update` when you're not sure if a contact exists — it creates or updates.
-- **`addToAudience` on transactional**: Setting this to `true` when sending a transactional email will make sure the recipient is added to the audience for markting emails.
+- **`addToAudience` on transactional**: Setting this to `true` when sending a transactional email will make sure the recipient is added to the audience for marketing emails.
 - **Finding your `transactionalId`**: Go to your Loops dashboard → Transactional, or call `GET /v1/transactional`, and use the exact `id` returned.
 - **Mailing list membership**: Pass `{ "list_id": true }` to subscribe, `{ "list_id": false }` to unsubscribe. Use the exact list IDs returned by `GET /v1/lists`.
 - **Event name must match exactly**: The `eventName` you send must match the trigger you configured in your Loops automation — including case.
