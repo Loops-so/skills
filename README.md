@@ -8,7 +8,7 @@ This repository packages reusable skills for the `skills` CLI and the `skills.sh
 
 | Skill | What it covers |
 | --- | --- |
-| [`api`](./skills/api/SKILL.md) | Use the Loops API to manage contacts, create contact properties, work with mailing lists, send events, and send transactional emails. Includes authentication, rate limits, idempotency, and example implementations. |
+| [`api`](./skills/api/SKILL.md) | Use the Loops API, SDKs, and CLI to manage contacts, create contact properties, work with mailing lists, send events, validate credentials, and send transactional emails. Includes HTTP, SDK, and terminal workflows. |
 
 ## Install
 
@@ -24,12 +24,13 @@ npx skills add https://github.com/Loops-so/skills --skill api
 
 Use the `api` skill when you need to:
 
+- Authenticate or troubleshoot the Loops CLI from the terminal
 - Create, update, find, or delete contacts in Loops
 - Create and manage custom contact properties
 - Read mailing lists and update mailing-list membership
 - Trigger Loops events from your app or backend workflows
 - Send transactional emails from server-side code
-- Choose between the official SDKs and raw HTTP requests
+- Choose between the Loops CLI, official SDKs, and raw HTTP requests
 - Handle rate limits, idempotency keys, and server-side-only constraints
 
 ## Source Of Truth
@@ -59,4 +60,5 @@ If you are updating API guidance, check the live docs and OpenAPI spec before me
 skills/
   api/
     SKILL.md
+    references/
 ```
