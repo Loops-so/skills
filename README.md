@@ -2,13 +2,14 @@
 
 Installable agent skills for working with Loops.
 
-This repository packages reusable skills for the `skills` CLI and the `skills.sh` ecosystem. It is intended to help coding agents integrate with Loops faster and more accurately, with guidance for the Loops API, official SDKs, and common server-side implementation patterns.
+This repository packages reusable skills for the `skills` CLI and the `skills.sh` ecosystem. It is intended to help coding agents integrate with Loops faster and more accurately, with guidance for the Loops API, official SDKs, common server-side implementation patterns, and email-sending best practices.
 
 ## Available Skills
 
 | Skill | What it covers |
 | --- | --- |
 | [`api`](./skills/api/SKILL.md) | Use the Loops API, SDKs, and CLI to manage contacts, create contact properties, work with mailing lists, send events, validate credentials, and send transactional emails. Includes HTTP, SDK, and terminal workflows. |
+| [`email-sending-best-practices`](./skills/email-sending-best-practices/SKILL.md) | Review and improve email sending quality across deliverability, consent, design, lifecycle strategy, and transactional-vs-marketing decisions. Generic by default, with Loops-specific caveats and defaults. |
 
 ## Install
 
@@ -18,6 +19,9 @@ npx skills add https://github.com/Loops-so/skills --list
 
 # Install the API skill
 npx skills add https://github.com/Loops-so/skills --skill api
+
+# Install the email best-practices skill
+npx skills add https://github.com/Loops-so/skills --skill email-sending-best-practices
 ```
 
 ## When To Use The `api` Skill
@@ -41,6 +45,7 @@ This repo is a convenience layer for agents. For the latest API behavior and sch
 - API reference: https://loops.so/docs/api-reference/intro
 - JavaScript SDK: https://loops.so/docs/sdks/javascript
 - OpenAPI spec: https://app.loops.so/openapi.json
+- CLI repo: https://github.com/Loops-so/cli
 
 ## Local Development
 
@@ -52,13 +57,16 @@ cd skills
 npx skills add . --list
 ```
 
-If you are updating API guidance, check the live docs and OpenAPI spec before merging changes.
+If you are updating API guidance, check the live docs, OpenAPI spec, and CLI repo before merging changes.
 
 ## Repository Structure
 
 ```text
 skills/
   api/
+    SKILL.md
+    references/
+  email-sending-best-practices/
     SKILL.md
     references/
 ```

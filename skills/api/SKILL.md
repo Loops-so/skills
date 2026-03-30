@@ -40,6 +40,14 @@ When this skill is active:
 5. Keep Loops requests server-side.
 6. Verify exact behavior against the official docs, OpenAPI spec, or `loops --help` when details matter.
 
+Official references:
+
+- Docs: `https://loops.so/docs`
+- API reference: `https://loops.so/docs/api-reference/intro`
+- JavaScript SDK: `https://loops.so/docs/sdks/javascript`
+- OpenAPI spec: `https://app.loops.so/openapi.json`
+- CLI repo: `https://github.com/Loops-so/cli`
+
 ## Choose The Interface
 
 - CLI:
