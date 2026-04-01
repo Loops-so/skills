@@ -51,10 +51,10 @@ Get the API key from `Settings > API` in Loops.
 ### Keyring storage
 
 ```bash
-# Save a key interactively and verify it
+# Save a key interactively, verify it, and make it the default
 loops auth login --name my-team
 
-# Save a key without verifying first
+# Save a key without verifying first and make it the default
 loops auth login --name my-team --skip-verify
 
 # List stored keys
@@ -74,6 +74,7 @@ loops auth logout --name my-team
 ```
 
 Run `loops auth login` again with a different `--name` to store keys for multiple teams.
+Each `loops auth login --name ...` call also sets that stored key as the current default.
 
 Use `--team <name>` on any command to select a specific stored key without changing the default.
 
@@ -87,7 +88,10 @@ When multiple credentials are available, the CLI resolves them in this order:
 
 1. `LOOPS_API_KEY`
 2. `--team <name>`
-3. the current default set with `loops auth use`
+3. the current default stored key set with `loops auth use` or the most recent `loops auth login`
+4. if no default is set and exactly one stored key exists, the CLI uses that key automatically
+
+`loops auth use --clear` clears the explicit default, but it does not disable that single-stored-key fallback.
 
 ### Global flags
 
