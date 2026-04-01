@@ -19,19 +19,25 @@ Prefer the CLI when the user is:
 
 Prefer SDKs or raw HTTP for application code.
 
-## Build And Install
+## Installation
 
-Current README guidance:
+The current CLI README describes the CLI as pre-release alpha software. Prefer `loops --help` and the README as the source of truth if installation or auth behavior seems to be moving.
+
+### Homebrew
 
 ```bash
-git clone https://github.com/Loops-so/cli.git
-cd cli
-go build -o ./loops .
+brew install loops-so/tap/loops
 ```
 
-Use the Go version from the CLI repo `go.mod`. At current HEAD that is `1.26.1`.
+### Install script
 
-Move the built `./loops` binary into your `PATH` if needed.
+```bash
+curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/loops-so/cli/main/install.sh | bash
+```
+
+To install a specific version or to a custom path, append `-s -- <version> <path>` to `bash` in the command above. The default install path is `~/.local/bin`.
+
+If the user is working from source instead of using an installer, defer to the CLI repo README.
 
 ## Auth And Configuration
 
@@ -40,7 +46,9 @@ The CLI needs a Loops API key. You can either:
 - set `LOOPS_API_KEY` in the environment, or
 - store named keys with `loops auth ...`
 
-### Common auth flows
+Get the API key from `Settings > API` in Loops.
+
+### Keyring storage
 
 ```bash
 # Save a key interactively and verify it
@@ -52,10 +60,10 @@ loops auth login --name my-team --skip-verify
 # List stored keys
 loops auth list
 
-# Set the active stored key
+# Set a stored key as the default
 loops auth use my-team
 
-# Clear the active stored key
+# Clear the default stored key
 loops auth use --clear
 
 # Show resolved config, active key, masked API key, team, and endpoint
@@ -64,6 +72,22 @@ loops auth status
 # Remove a stored key
 loops auth logout --name my-team
 ```
+
+Run `loops auth login` again with a different `--name` to store keys for multiple teams.
+
+Use `--team <name>` on any command to select a specific stored key without changing the default.
+
+### Environment variable
+
+Set `LOOPS_API_KEY` directly when keyring storage is unavailable or when running in CI.
+
+### Auth precedence
+
+When multiple credentials are available, the CLI resolves them in this order:
+
+1. `LOOPS_API_KEY`
+2. `--team <name>`
+3. the current default set with `loops auth use`
 
 ### Global flags
 
