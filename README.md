@@ -13,15 +13,21 @@ This repository packages reusable skills for the `skills` CLI and the `skills.sh
 
 ## Install
 
+Install our skills using [vercel-labs/skills](https://github.com/vercel-labs/skills). Below are suggested installation commands for the happy-path. Consult [Vercel's documentation](https://github.com/vercel-labs/skills?tab=readme-ov-file#options) for the comprehensive set of installation options.
+
+### List the skills in this repo
 ```bash
-# List the skills in this repo
 npx skills add https://github.com/Loops-so/skills --list
+```
 
-# Install the API skill
-npx skills add https://github.com/Loops-so/skills --skill api
+### Install the API skill
+```bash
+npx skills add https://github.com/Loops-so/skills --skill api --global
+```
 
-# Install the email best-practices skill
-npx skills add https://github.com/Loops-so/skills --skill email-sending-best-practices
+### Install the email best-practices skill
+```bash
+npx skills add https://github.com/Loops-so/skills --skill email-sending-best-practices --global
 ```
 
 ## When To Use The `api` Skill
