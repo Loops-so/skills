@@ -1,5 +1,15 @@
 # Loops CLI Reference
 
+## Contents
+
+- Source URLs
+- When To Use The CLI
+- Installation
+- Auth And Configuration
+- Global flags
+- Common Workflows
+- Practical Guidance
+
 ## Source URLs
 
 - https://github.com/Loops-so/cli
