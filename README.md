@@ -21,7 +21,7 @@ npx skills add https://github.com/Loops-so/skills --list
 # Install all Loops skills globally (recommended)
 npx skills add https://github.com/Loops-so/skills --global
 
-# Install one Loops skill globally
+# Install specific Loops skills globally
 npx skills add https://github.com/Loops-so/skills --global --skill api
 npx skills add https://github.com/Loops-so/skills --global --skill cli
 npx skills add https://github.com/Loops-so/skills --global --skill email-sending-best-practices
