@@ -39,7 +39,7 @@ The current CLI README describes the CLI as pre-release alpha software. Prefer `
 brew install loops-so/tap/loops
 ```
 
-### Install script
+### Install script (macOS, Linux, Windows via WSL)
 
 ```bash
 curl -fsSL --proto '=https' --tlsv1.2 https://cli.loops.so | bash
@@ -48,6 +48,12 @@ curl -fsSL --proto '=https' --tlsv1.2 https://cli.loops.so | bash
 To install a specific version or to a custom path, append `-s -- <version> <path>` to `bash` in the command above. The default install path is `~/.local/bin`.
 
 If the user is working from source instead of using an installer, defer to the CLI repo README.
+
+## Install script (Windows PowerShell)
+
+```pwsh
+irm https://raw.githubusercontent.com/Loops-so/cli/main/install.ps1 | iex
+```
 
 ## Auth And Configuration
 
