@@ -32,7 +32,7 @@ brew install loops-so/tap/loops
 ### Install script
 
 ```bash
-curl -fsSL --proto '=https' --tlsv1.2 https://raw.githubusercontent.com/loops-so/cli/main/install.sh | bash
+curl -fsSL --proto '=https' --tlsv1.2 https://cli.loops.so | bash
 ```
 
 To install a specific version or to a custom path, append `-s -- <version> <path>` to `bash` in the command above. The default install path is `~/.local/bin`.
