@@ -1,5 +1,17 @@
 # Loops HTTP API and SDK Reference
 
+## Contents
+
+- Source URLs
+- Authentication
+- Base URL
+- Rate Limits
+- Official SDKs
+- Endpoints
+- Code Examples
+- Common Errors
+- Tips
+
 ## Source URLs
 
 - https://loops.so/docs/api-reference/intro
@@ -44,7 +56,7 @@ Use an official SDK when the user's language has one:
 - **PHP**: `composer require loops-so/loops`
 - **Ruby**: `gem install loops_sdk`
 
-If the user is working from the shell instead of application code, see `cli.md`.
+If the user is working from the shell instead of application code, use the separate `cli` skill.
 
 ---
 
