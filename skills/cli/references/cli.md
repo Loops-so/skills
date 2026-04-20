@@ -49,6 +49,12 @@ To install a specific version or to a custom path, append `-s -- <version> <path
 
 If the user is working from source instead of using an installer, defer to the CLI repo README.
 
+### Go install
+
+```bash
+go install github.com/loops-so/cli/cmd/loops@latest
+```
+
 ## Install script (Windows PowerShell)
 
 ```pwsh
