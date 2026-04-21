@@ -58,9 +58,8 @@ Nesting summary:
 - `<CodeBlock>`, `<Button>` → text only (braces are literal inside these)
 - `<OrderedList>`, `<UnorderedList>` → only `<ListItem>` children
 - `<Columns>` → only `<ColumnItem>` children
-- `<ColumnItem>`, `<ComponentContainer>`, `<For>` → block tags (same set as top-level, minus `<Style>`)
+- `<ColumnItem>`, `<ComponentContainer>` → block tags (same set as top-level, minus `<Style>`)
 - `<Icons>` → only `<Icon />` children
-- `<For>` → must contain at least one block child
 - Self-closing with no children: `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`
 
 ---
@@ -258,21 +257,7 @@ Wraps a reusable email component. Children are block tags (no `<Style>`, no nest
 </ComponentContainer>
 ```
 
-### 4.13 `<For>`
-
-Loops over an array variable. Must contain at least one block child.
-
-| Attribute | Type | Notes |
-| --- | --- | --- |
-| `variable` | variable expression | `"{items}"`, `"{data.products}"`, or `"{event.items}"` — braces required |
-
-```xml
-<For variable="{data.products}">
-  <Paragraph>Product name</Paragraph>
-</For>
-```
-
-### 4.14 `<Icons>` + `<Icon />`
+### 4.13 `<Icons>` + `<Icon />`
 
 Social / inline icon row. Children are `<Icon />` only.
 
@@ -302,7 +287,7 @@ Social / inline icon row. Children are `<Icon />` only.
 </Icons>
 ```
 
-### 4.15 `<Style />` (self-closing, top-level metadata)
+### 4.14 `<Style />` (self-closing, top-level metadata)
 
 At most one per document. Must appear before all other tags. Does not produce rendered content — it sets document-level styling. All attributes are optional.
 
@@ -367,7 +352,6 @@ Inner `textColor` wins when nested. Example: `<Text textColor="#f00"><Strong tex
 Variables are written as `{name}` **inside text content** of inline-content tags (`<Paragraph>`, headings, `<Quote>`, `<ListItem>`, and inside inline tags). They are **not** valid:
 
 - Inside `<CodeBlock>` or `<Button>` (text-only — braces are literal there)
-- As attribute values (except `<For variable="…">`)
 - At the top level (wrap in `<Paragraph>` first)
 
 Three kinds, disambiguated by prefix:
@@ -376,24 +360,12 @@ Three kinds, disambiguated by prefix:
 | --- | --- | --- |
 | `{firstName}` | merge tag | Contact property (bare name), used in campaigns and loop emails |
 | `{contact.email}` | merge tag | Contact property (explicit `contact.` prefix), used in campaigns and loop emails |
-| `{data.order.id}` | data variable | Transactional email data variable, only available in transactional emails |
-| `{event.type}` | event property | Event-trigger property, used only in loops emails that are triggered by events |
 
 Examples:
 
 ```xml
 <Paragraph>Hello {firstName}!</Paragraph>
-<Paragraph>Order {evemt.orderId} shipped to {contact.email}.</Paragraph>
-<Paragraph>Triggered by {event.eventName}.</Paragraph>
-<Paragraph>Click <Link href="https://example.com">{firstName}'s receipt</Link>.</Paragraph>
-```
-
-Inside `<For variable="…">`, the variable expression must include braces and must be a single expression:
-
-```xml
-<For variable="{data.products}">
-  <Paragraph>A product.</Paragraph>
-</For>
+<Paragraph>Order shipped to {contact.email}.</Paragraph>
 ```
 
 ---
@@ -409,10 +381,8 @@ Inside `<For variable="…">`, the variable expression must include braces and m
 | `<ListItem>` outside a list | Nest in `<UnorderedList>` or `<OrderedList>` |
 | `<ColumnItem>` outside `<Columns>` | Wrap in `<Columns>…</Columns>` |
 | `<Icon />` outside `<Icons>` | Wrap in `<Icons>…</Icons>` |
-| `{firstName}` inside `<CodeBlock>` / `<Button>` | These are text-only — braces are literal |
+| `{firstName}` inside `<CodeBlock>` | These are text-only — braces are literal |
 | `textColor="red"` | Use hex: `textColor="#f00"` or `textColor="#ff0000"` |
-| `<For variable="data.products">` | Braces required: `<For variable="{data.products}">` |
-| `<For>` with only text | Must contain at least one block tag, e.g. `<Paragraph>` |
 | Two `<Style />` tags | Only one `<Style />` per document |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
 
@@ -444,9 +414,6 @@ Inside `<For variable="…">`, the variable expression must include braces and m
     <Paragraph>Join other builders.</Paragraph>
   </ColumnItem>
 </Columns>
-<For variable="{data.products}">
-  <Paragraph>Featured product — see it <Link href="https://example.com">here</Link>.</Paragraph>
-</For>
 <Icons align="center" gap="20" size="24" color="#334155">
   <Icon name="twitter" href="https://x.com/loops" />
   <Icon name="github" href="https://github.com/loops" />

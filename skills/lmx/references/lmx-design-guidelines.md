@@ -97,8 +97,6 @@ Avoid this pattern:
 </Columns>
 ```
 
-If you want a rounded card effect, use a `<ComponentContainer>` with `blockBorderRadius`, or wrap content in a single full-width block instead of splitting into columns.
-
 Rounding is fine on standalone blocks (outside `<Columns>`), on `<Button>`, and on `<Image />`.
 
 ---
