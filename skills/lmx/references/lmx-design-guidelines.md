@@ -1,0 +1,122 @@
+# LMX Design Guidelines
+
+These guidelines apply to every LMX document unless the user explicitly overrides a rule. They cover visual design decisions that the spec does not enforce but that produce good-looking, readable emails.
+
+---
+
+## Always Set Body And Background Color
+
+Every document must include a `<Style />` tag with both `bodyColor` and `backgroundColor` set. Do not skip either.
+
+- `bodyColor` — the email body/card background (the centered content area)
+- `backgroundColor` — the page/canvas behind the body
+
+Setting both gives the email a clear visual structure and prevents the renderer from falling back to default colors that may clash with your content.
+
+```xml
+<!-- Do this -->
+<Style bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" />
+
+<!-- Not this — missing backgroundColor -->
+<Style bodyColor="#ffffff" />
+```
+
+If the user asks for a dark email:
+
+```xml
+<Style bodyColor="#0f172a" backgroundColor="#020617" bodyYPadding="24" />
+```
+
+Always infer sensible defaults for `bodyYPadding` (typically `"16"` to `"32"`) even when the user doesn't specify.
+
+---
+
+## Contrast: No Same-Color-On-Same-Color
+
+Never place text, icons, or UI elements in the same color (or near-same color) as their background. Common failure modes to check:
+
+**Text vs block/body background:**
+- If `bodyColor` is white (`#ffffff`), `textBaseColor` must be dark (e.g. `#0f172a`, `#1e293b`).
+- If you set `blockColor` on a `<Paragraph>` or heading, the text inside must have sufficient contrast against that `blockColor`, not just the body.
+- Never use `textColor="#ffffff"` on a block with `blockColor="#ffffff"` or a light `bodyColor`.
+
+**Buttons:**
+- `bgColor` and `textColor` on `<Button>` must contrast. Dark background → light text. Light background → dark text.
+- If no explicit `textColor` is set on a `<Button>`, assume the document's `textBaseColor` will be used — ensure that still contrasts against the button `bgColor`.
+
+**CodeBlock:**
+- `<CodeBlock>` has its own `blockColor`. If you set a custom `blockColor` on a `<CodeBlock>`, also ensure the surrounding `bodyColor` and the code text color are visually distinct from that block. A good default is a slightly darker or muted tint of the body color (e.g. `#f1f5f9` on a white body).
+- If you change `<CodeBlock blockColor="…">` to a dark color, you must also visually account for the code text — note that there is no explicit text color attribute on `<CodeBlock>`, so use `blockColor` values that contrast with the inherited text color.
+
+**Icons:**
+- `<Icons color="…">` sets the icon color. If the `<Icons>` block sits on a `bodyColor` background, the icon color must contrast against the body. White icons on a white body are invisible.
+- If you set `blockColor` on the `<Icons>` element, icon color must contrast against that, not the body.
+
+---
+
+## Add Vertical Spacing Around Elements
+
+Use `paddingTop` and `paddingBottom` on block elements to add breathing room. Emails without spacing feel dense and hard to scan.
+
+Default approach:
+- Headings (`<H1>`, `<H2>`, `<H3>`): add `paddingTop="24"` or `paddingTop="32"` unless they are the first element.
+- `<Paragraph>` after a heading: `paddingBottom="8"` to `"16"` is typical.
+- `<Button>`: add `paddingTop="24"` and `paddingBottom="24"` to give CTAs room.
+- `<Divider>`: typically fine without explicit padding, but add `paddingTop="16" paddingBottom="16"` if elements feel crowded.
+- `<Image />`: `paddingBottom="16"` unless immediately followed by a caption paragraph.
+
+Use `bodyYPadding` on `<Style />` for global top/bottom padding inside the body — `"16"` to `"32"` is a sensible default.
+
+```xml
+<!-- Good — elements breathe -->
+<Style bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" />
+<H1 paddingTop="8" paddingBottom="4">Welcome aboard</H1>
+<Paragraph paddingBottom="16">Here is what happens next.</Paragraph>
+<Button href="https://loops.so" bgColor="#0f172a" textColor="#ffffff" align="center" paddingTop="8" paddingBottom="24">Get started</Button>
+```
+
+---
+
+## Columns Cannot Be Rounded
+
+`<Columns>` does not support border-radius. Do **not** apply `blockBorderRadius` to `<Columns>` or to block elements inside `<ColumnItem>` with the intention of rounding the column itself.
+
+Why: columns render as adjacent table cells. Two rounded blocks placed side by side produce awkward mismatched corners that look broken — each block has its own rounded corner butting up against the other.
+
+Avoid this pattern:
+
+```xml
+<!-- Bad — rounded blocks in columns look broken -->
+<Columns gap="0" widths="50,50">
+  <ColumnItem>
+    <Paragraph blockColor="#e2e8f0" blockBorderRadius="12">Left</Paragraph>
+  </ColumnItem>
+  <ColumnItem>
+    <Paragraph blockColor="#e2e8f0" blockBorderRadius="12">Right</Paragraph>
+  </ColumnItem>
+</Columns>
+```
+
+If you want a rounded card effect, use a `<ComponentContainer>` with `blockBorderRadius`, or wrap content in a single full-width block instead of splitting into columns.
+
+Rounding is fine on standalone blocks (outside `<Columns>`), on `<Button>`, and on `<Image />`.
+
+---
+
+## CodeBlock Color Pairing
+
+When you set a custom `blockColor` on a `<CodeBlock>`, visually pair it with the surrounding body:
+
+- Light body (`bodyColor="#ffffff"`): use a subtle tinted block, e.g. `blockColor="#f8fafc"` or `blockColor="#f1f5f9"`. This creates separation without jarring contrast.
+- Dark body (`bodyColor="#0f172a"`): use a slightly lighter dark, e.g. `blockColor="#1e293b"`.
+- Avoid colorful block colors on `<CodeBlock>` — code should read as technical/neutral.
+
+---
+
+## Visual Hierarchy Summary
+
+- One `<H1>` per document (unless the content genuinely has multiple top-level sections).
+- Follow heading levels in order: `<H1>` → `<H2>` → `<H3>`. Don't skip levels for styling reasons — adjust `fontSize` instead.
+- CTAs (`<Button>`) should stand out: high contrast, enough padding, aligned centrally for most transactional emails.
+- Use `<Divider />` sparingly to separate distinct sections, not between every element.
+- Keep icon rows (`<Icons>`) near the footer, typically the last or second-to-last block.
