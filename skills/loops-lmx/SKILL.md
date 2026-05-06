@@ -12,7 +12,7 @@ description: >
   intended for Loops. Do not trigger for questions about the Loops HTTP API,
   SDK integration, or CLI unless email body content is also involved.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # LMX Skill
@@ -33,11 +33,11 @@ Use this skill when the task involves:
 
 When this skill is active:
 
-1. Read `references/lmx-spec.md` for the full tag and attribute reference. It is authoritative — do not invent tags or attributes.
+1. Read `references/lmx-spec.md` for the full tag and attribute reference. It is authoritative; do not invent tags or attributes.
 2. Read `references/lmx-design-guidelines.md` for Loops design guidelines. Apply these to every document you generate unless the user explicitly overrides a rule.
 3. Validate nesting and content-type rules before producing output (see spec section 3).
 4. Check the common-mistakes table in the spec before finalizing output.
-5. Always produce a complete, valid document — not fragments, unless the user specifically asks for one.
+5. Always produce a complete, valid document, not fragments, unless the user specifically asks for one.
 
 ## Category Routing
 
@@ -61,6 +61,8 @@ Before returning any LMX output, verify:
 - [ ] `<For variable="...">` uses braces, is prefixed, and contains at least one block child
 - [ ] `<Style />` appears at most once as a top-level tag; put it first in generated output
 - [ ] Body/background colors are intentional: supplied by `themeId` or explicit `bodyColor`/`backgroundColor`
+- [ ] Generated copy avoids em dashes unless the user explicitly asked for them
+- [ ] Generated `<H1>`, `<H2>`, and `<H3>` text does not end with a period
 - [ ] No same-color-on-same-color situations (check text vs block color, icon color vs background, etc.)
 - [ ] Sufficient Y-spacing on block elements
 - [ ] Current tag names are used: `<Component>`, not `<ComponentContainer>`; `themeId`, not `styleTemplateId`
