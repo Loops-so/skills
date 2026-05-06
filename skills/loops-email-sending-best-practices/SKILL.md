@@ -1,5 +1,5 @@
 ---
-name: email-sending-best-practices
+name: loops-email-sending-best-practices
 description: >
   Use this skill when the user wants to review, audit, improve, or plan email
   sending best practices. This includes deliverability, inbox placement, sender
@@ -32,7 +32,7 @@ Typical use cases:
 - plan onboarding, retention, re-engagement, dunning, or product-update email programs
 - review a Loops setup for best-practice gaps
 
-Do not default to this skill for pure implementation tasks like "send an event with the Loops API" or "wire up transactional email in Next.js". Use the `api` skill for those.
+Do not default to this skill for pure implementation tasks like "send an event with the Loops API" or "wire up transactional email in Next.js". Use the `loops-api` skill for those.
 
 ## Working Style
 

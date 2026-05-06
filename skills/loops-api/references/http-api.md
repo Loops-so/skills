@@ -56,7 +56,7 @@ Use an official SDK when the user's language has one:
 - **PHP**: `composer require loops-so/loops`
 - **Ruby**: `gem install loops_sdk`
 
-If the user is working from the shell instead of application code, use the separate `cli` skill.
+If the user is working from the shell instead of application code, use the separate `loops-cli` skill.
 
 ---
 

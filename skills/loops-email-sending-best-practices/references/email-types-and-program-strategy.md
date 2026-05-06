@@ -68,4 +68,4 @@
 
 - Transactional emails in Loops do not track opens or clicks.
 - Transactional emails do not require unsubscribe links.
-- If the question is really about wiring triggers, data variables, or API payloads, hand off to the `api` skill after the best-practice recommendation is clear.
+- If the question is really about wiring triggers, data variables, or API payloads, hand off to the `loops-api` skill after the best-practice recommendation is clear.

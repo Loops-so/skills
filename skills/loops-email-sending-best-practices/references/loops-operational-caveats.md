@@ -47,4 +47,4 @@
 ## Practical Guidance
 
 - If the recommendation depends on Loops product behavior, say so explicitly.
-- If the user needs implementation details after the policy/best-practice decision is made, use the Loops `api` skill for the actual payloads and integration patterns.
+- If the user needs implementation details after the policy/best-practice decision is made, use the `loops-api` skill for the actual payloads and integration patterns.

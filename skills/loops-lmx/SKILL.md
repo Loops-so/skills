@@ -1,5 +1,5 @@
 ---
-name: lmx
+name: loops-lmx
 description: >
   Use this skill whenever the user wants to create, write, generate, or edit
   email content in Loops. This includes composing campaigns, loops, lifecycle
