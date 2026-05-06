@@ -2,7 +2,7 @@
 
 Official installable Loops skills for AI coding agents.
 
-This repository packages `SKILL.md`-based skills for working with Loops. It is intended to help agents use the Loops API, official SDKs, the Loops CLI, and email-sending best practices more accurately.
+This repository packages `SKILL.md`-based skills for working with Loops. It is intended to help agents use the Loops API, official SDKs, the Loops CLI, LMX email markup, and email-sending best practices more accurately.
 
 These skills are designed for agent environments that support installable skills, such as Claude Code, Codex, Cursor, and other tools that work with the `skills` CLI.
 
@@ -24,6 +24,7 @@ npx skills add https://github.com/Loops-so/skills --global
 # Install specific Loops skills globally
 npx skills add https://github.com/Loops-so/skills --global --skill api
 npx skills add https://github.com/Loops-so/skills --global --skill cli
+npx skills add https://github.com/Loops-so/skills --global --skill lmx
 npx skills add https://github.com/Loops-so/skills --global --skill email-sending-best-practices
 ```
 
@@ -36,14 +37,15 @@ After installation, try a task that should trigger one of the skills:
 - "Add a contact to Loops from my Next.js backend."
 - "Install the Loops CLI and authenticate against the right team."
 - "Send a transactional email with the Loops CLI."
+- "Write an LMX onboarding email template."
 - "Audit this onboarding email flow for deliverability issues."
 
 ## What's Included
 
 This repo currently ships:
 
-- three installable skills that auto-load when relevant
-- detailed reference files for API, SDK, CLI, and email-program guidance
+- four installable skills that auto-load when relevant
+- detailed reference files for API, SDK, CLI, LMX, and email-program guidance
 
 This repo does not currently ship:
 
@@ -108,11 +110,29 @@ Example prompts:
 
 Skill file: [skills/email-sending-best-practices/SKILL.md](./skills/email-sending-best-practices/SKILL.md)
 
+### `lmx`
+
+Use this skill when you need to:
+
+- create or edit Loops email content in LMX
+- review LMX markup for valid tags, nesting, attributes, and variables
+- use contact properties, data variables, event properties, arrays, components, sections, dynamic links, or dynamic images in Loops email content
+- apply Loops email design guidance while producing valid LMX
+
+Example prompts:
+
+- "Write a product update campaign in LMX."
+- "Convert this lifecycle email copy into Loops LMX."
+- "Review this LMX for production API compatibility."
+
+Skill file: [skills/lmx/SKILL.md](./skills/lmx/SKILL.md)
+
 ## Stability Notes
 
 - This repo is maintained by Loops.
 - The Loops CLI has its own skill in this repo.
 - The Loops CLI itself is still pre-release and may change faster than the API and SDK docs.
+- The LMX skill tracks production LMX behavior in the Loops editor and content API.
 
 ## Source Of Truth
 
@@ -151,6 +171,9 @@ skills/
     SKILL.md
     references/
   cli/
+    SKILL.md
+    references/
+  lmx/
     SKILL.md
     references/
   email-sending-best-practices/
