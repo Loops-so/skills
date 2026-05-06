@@ -1,41 +1,49 @@
 # LMX Specification
 
-Source URL: https://loops.so/docs/creating-emails/lmx
+Source: Loops production LMX runtime (`lib/lmx/*`) and public editor docs.
+Synced on 2026-05-06.
 
-**LMX** (Loops Markup Language) is an XML-based rich-text format for email content. Every element is a PascalCase tag; there is no shorthand syntax.
+LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
 
 ---
 
 ## 1. Core Rules
 
-1. **XML, not HTML.** Tags are case-sensitive PascalCase: `<Paragraph>`, not `<paragraph>` or `<P>`.
-2. **Self-closing tags must use `/>`.** Example: `<Image src="..." />`, `<Br />`, `<Divider />`. Writing `<Image src="...">` without a close is invalid.
-3. **Only the tags defined in this spec are valid.** Unknown tags are rejected.
-4. **Unknown attributes are ignored.** Don't invent attributes — values outside the documented set have no effect.
-5. **Required attributes must be present.** For example, `<Image>` without `src` is invalid.
-6. **All attribute values are quoted strings.** Numbers and booleans are written as strings: `width="400"`, `notrack="true"`. Types are interpreted from the attribute definition.
-7. **Text at the root is invalid.** Every piece of text must be inside a block tag. Top-level text, top-level variables, and top-level inline tags (`<Strong>`, `<Link>`, `<Br>`, etc.) are rejected.
-8. **Whitespace between block tags is not rendered.** You can indent and line-break freely.
+1. **XML, not HTML.** Tags are case-sensitive PascalCase: `<Paragraph>`, not `<paragraph>` or `<p>`.
+2. **Self-closing tags must use `/>`.** Example: `<Image src="..." />`, `<Br />`, `<Divider />`.
+3. **Only documented tags are valid.** Unknown tags fail parsing.
+4. **Unknown attributes are warnings and have no effect.** Do not invent attributes.
+5. **Required attributes must be present.** For example, `<Image />` without `src` is invalid.
+6. **All attribute values are quoted strings.** Numbers and booleans are written as strings: `width="400"`, `notrack="true"`.
+7. **Top-level text and variables are invalid.** Wrap all text and variables in a block tag such as `<Paragraph>`.
+8. **Whitespace between block tags is ignored.** Indent and line-break freely.
 9. **Escape `<` and `&` in text** as `&lt;` and `&amp;`. Escape `"` and `&` in attribute values as `&quot;` and `&amp;`.
-10. **A document is a sequence of top-level block elements**, optionally preceded by a single `<Style />` tag.
+10. **One `<Style />` tag maximum.** It is top-level metadata. Prefer putting it first; the exporter always emits it first.
+11. **Content API payload limit:** LMX sent through the email-message API must be at most 100 KB.
 
 ---
 
 ## 2. Top-Level Structure
 
-A valid document contains zero or more of the following **top-level tags**:
+A valid document contains zero or more top-level block tags, plus an optional single `<Style />`:
 
-```
+```text
 H1, H2, H3, Paragraph, Quote, CodeBlock, Button, Image,
-Divider, OrderedList, UnorderedList, Columns, ComponentContainer,
-For, Icons, Style
+Divider, OrderedList, UnorderedList, Columns, Component,
+For, Icons, Section, Style
 ```
 
-Tags like `<ListItem>`, `<ColumnItem>`, `<Icon>`, `<Br>`, `<Strong>`, `<Em>`, `<Link>`, etc. are **not** valid at the top level — they only appear inside their container or inline context.
+Not valid at the top level:
 
-Example minimal document:
+```text
+ListItem, ColumnItem, Icon, Br, Strong, Em, Underline, Strike,
+Code, Text, Link
+```
+
+Example:
 
 ```xml
+<Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" />
 <H1>Welcome</H1>
 <Paragraph>Hello world.</Paragraph>
 ```
@@ -44,190 +52,209 @@ Example minimal document:
 
 ## 3. Content Types And Nesting
 
-Each tag declares what content it accepts:
-
 | Content type | Meaning |
 | --- | --- |
-| `inline` | Text, `{variables}`, inline format tags (`<Strong>`, `<Em>`, …), `<Br>` |
-| `text` | Plain text only — no inline tags, no `{variables}` (braces are literal) |
-| `none` | No text at all — only specific element children, or self-closing |
+| `inline` | Text, variables, inline tags, and `<Br />` |
+| `text` | Text and variables only; no inline formatting tags |
+| `raw` | Literal text only; braces are not parsed as variables |
+| `none` | No text content; only declared element children or self-closing |
 
 Nesting summary:
 
-- `<H1>`, `<H2>`, `<H3>`, `<Paragraph>`, `<Quote>`, `<ListItem>` → inline content
-- `<CodeBlock>`, `<Button>` → text only (braces are literal inside these)
-- `<OrderedList>`, `<UnorderedList>` → only `<ListItem>` children
-- `<Columns>` → only `<ColumnItem>` children
-- `<ColumnItem>`, `<ComponentContainer>` → block tags (same set as top-level, minus `<Style>`)
-- `<Icons>` → only `<Icon />` children
-- Self-closing with no children: `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`
+- `<H1>`, `<H2>`, `<H3>`, `<Paragraph>`, `<Quote>`, `<ListItem>` -> inline content.
+- `<Button>` -> text content with variables allowed, but no inline formatting tags.
+- `<CodeBlock>` -> raw literal text; variables are not parsed.
+- `<OrderedList>`, `<UnorderedList>` -> one or more `<ListItem>` children.
+- `<Columns>` -> exactly two `<ColumnItem>` children.
+- `<ColumnItem>` -> block tags, excluding `<Style>`.
+- `<Component>` -> block tags, excluding `<Style>` and nested `<Component>`.
+- `<For>` -> at least one block child; `<Style>` is not allowed inside.
+- `<Section>` -> block tags, excluding `<Style>` and nested `<Section>`.
+- `<Icons>` -> one to 100 `<Icon />` children.
+- Self-closing with no children: `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`.
 
 ---
 
-## 4. Tag Reference
+## 4. Shared Attributes
 
-### 4.1 Headings — `<H1>`, `<H2>`, `<H3>`
+### Block Style Attributes
 
-Inline content. Shared optional attributes on all text blocks:
+These appear on many block tags:
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `fontSize` | number | In pixels (e.g. `"24"`) |
-| `lineHeight` | number | Percentage (e.g. `"150"` = 150%) |
-| `align` | string | `"left"`, `"center"`, `"right"` |
-| `blockColor` | hex | Background color of the block (e.g. `"#f8fafc"`) |
-| `blockBorderRadius` | number | |
-| `paddingTop` | number | |
-| `paddingRight` | number | |
-| `paddingBottom` | number | |
-| `paddingLeft` | number | |
+| `blockColor` | hex color | Block background |
+| `blockBorderRadius` | number | 0-999 |
+| `paddingTop`, `paddingRight`, `paddingBottom`, `paddingLeft` | number | Pixels |
+
+### Text Block Attributes
+
+Used by headings, paragraphs, quotes, and list items:
+
+| Attribute | Type | Notes |
+| --- | --- | --- |
+| `fontSize` | number | Headings/paragraphs/list items: 12-64 |
+| `lineHeight` | number | Percentage, 100-300 |
+| `align` | enum | `left`, `center`, `right` |
+| block style attrs | mixed | See above |
+
+---
+
+## 5. Block Tag Reference
+
+### 5.1 Headings: `<H1>`, `<H2>`, `<H3>`
+
+Inline content. Optional text block attributes.
 
 ```xml
 <H1>Plain heading</H1>
 <H2 align="center" fontSize="28">Centered heading</H2>
-<H3 blockColor="#f0f0f0" paddingTop="16">Heading on tinted background</H3>
+<H3 blockColor="#f8fafc" paddingTop="16">Heading on a tinted block</H3>
 ```
 
-### 4.2 `<Paragraph>`
+### 5.2 `<Paragraph>`
 
-Inline content. Same optional attributes as headings.
+Inline content. Optional text block attributes.
 
 ```xml
 <Paragraph>Plain paragraph.</Paragraph>
-<Paragraph align="center" fontSize="18">Centered bigger paragraph.</Paragraph>
-<Paragraph>Mixed <Strong>bold</Strong> and <Em>italic</Em> and <Link href="https://loops.so">a link</Link>.</Paragraph>
+<Paragraph>Mixed <Strong>bold</Strong>, <Em>italic</Em>, and <Link href="https://loops.so">a link</Link>.</Paragraph>
+<Paragraph>Hello {contact.firstName}.</Paragraph>
 ```
 
-### 4.3 `<Quote>`
+### 5.3 `<Quote>`
 
-Inline content. Same optional attributes as headings.
+Inline content. Optional text block attributes.
 
 ```xml
 <Quote>A short quotation.</Quote>
 <Quote fontSize="16">Quoted <Em>italic</Em> text.</Quote>
 ```
 
-### 4.4 `<CodeBlock>`
+### 5.4 `<CodeBlock>`
 
-**Text only.** No inline tags. `{foo}` inside is a literal string, not a variable.
+Raw literal text only. Inline tags and variables are not parsed.
 
-Attributes: `fontSize`, `lineHeight`, `blockColor`, `blockBorderRadius`, padding attrs.
+Optional attributes: `fontSize`, `lineHeight`, and block style attrs.
 
 ```xml
-<CodeBlock>const x = 1;</CodeBlock>
+<CodeBlock>const literal = "{contact.firstName}";</CodeBlock>
 ```
 
-### 4.5 `<Button>`
+### 5.5 `<Button>`
 
-**Text only** (same rule as `<CodeBlock>` — `{foo}` is literal).
+Text content with variables allowed. Inline tags such as `<Strong>` and `<Link>` are invalid inside buttons.
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `href` | url | |
-| `bgColor` | hex | |
-| `textColor` | hex | |
-| `borderRadius` | number | |
-| `borderWidth` | number | |
-| `borderColor` | hex | |
-| `innerXPadding` | number | |
-| `innerYPadding` | number | |
-| `fontSize` | number | |
-| `size` | string | `"small"`, `"medium"`, `"large"` |
-| `align` | string | `"left"`, `"center"`, `"right"` |
-| `notrack` | boolean | `"true"` disables link tracking |
-| `paddingTop`, etc. | number | Block padding |
+| `href` | url / dynamic string | Supports variables |
+| `bgColor`, `textColor`, `borderColor`, `blockColor` | hex color | |
+| `borderRadius` | number | 0-999 |
+| `borderWidth` | number | 0-16 |
+| `innerXPadding`, `innerYPadding` | number | 0-100 |
+| `fontSize` | number | 6-64 |
+| `align` | enum | `left`, `center`, `right` |
+| `notrack` | boolean | `"true"` disables tracking for this link |
+| `textFormat` | number | Format bitmask; use mainly when preserving exported LMX |
+| block style attrs | mixed | Block background / padding |
 
 ```xml
-<Button href="https://loops.so" bgColor="#000" textColor="#fff" borderRadius="12">Click me</Button>
-<Button href="https://example.com" size="large" align="center">Big centered CTA</Button>
+<Button href="https://loops.so/start" bgColor="#000000" textColor="#ffffff" borderRadius="12">Get started</Button>
+<Button href="https://app.example.com/orders/{data.orderId}">View order {data.orderId}</Button>
 ```
 
-### 4.6 `<Image />` (self-closing)
+Do not use the old `size` attribute; it is not supported by the current runtime.
+
+### 5.6 `<Image />`
+
+Self-closing.
 
 | Attribute | Type | Required | Notes |
 | --- | --- | :---: | --- |
-| `src` | url | yes | Image URL |
-| `alt` | string | | Alt text |
-| `href` | url | | Wraps image in a link |
-| `width` | number | | In pixels |
-| `align` | string | | `"left"`, `"center"`, `"right"` |
-| `borderRadius` | number | | |
-| `borderWidth` | number | | |
-| `borderColor` | hex | | |
+| `src` | url | yes | Static placeholder/source URL; no variables |
+| `alt` | string / dynamic string | | Supports variables |
+| `href` | url / dynamic string | | Supports variables |
+| `width` | number | | 12-600 pixels |
+| `align` | enum | | `left`, `center`, `right` |
+| `borderRadius` | number | | 0-999 |
+| `borderWidth` | number | | 0-16 |
+| `borderColor` | hex color | | |
+| `dynamicSrc` | url / dynamic string | | Use this for dynamic image URLs |
+| `emailAssetId` | string | | Loops-hosted asset id |
 | `notrack` | boolean | | |
-| `blockColor`, etc. | | | Block background / padding attrs |
+| block style attrs | mixed | | Block background / padding |
 
 ```xml
-<Image src="https://example.com/photo.png" alt="A photo" width="400" />
-<Image src="https://example.com/logo.png" href="https://loops.so" align="center" />
+<Image src="https://cdn.example.com/logo.png" alt="Company logo" width="180" align="center" />
+<Image src="https://cdn.example.com/avatar-placeholder.png" dynamicSrc="{contact.avatarUrl}" alt="{contact.firstName}" />
 ```
 
-### 4.7 `<Divider />` (self-closing)
+When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`.
+
+### 5.7 `<Divider />`
+
+Self-closing.
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `align` | string | `"left"`, `"center"`, `"right"` |
-| `width` | number | Percentage (e.g. `"80"` = 80%) |
-| `borderWidth` | number | |
-| `color` | hex | |
-| `size` | string | `"small"`, `"medium"`, `"large"` |
+| `align` | enum | `left`, `center`, `right` |
+| `width` | number | Percentage, 10-100 |
+| `borderWidth` | number | 1-16 |
+| `color` | hex color | |
+| `size` | enum | `small`, `medium`, `large` |
+| block style attrs | mixed | Block background / padding |
 
 ```xml
 <Divider />
-<Divider width="80" color="#ccc" size="small" />
+<Divider width="80" color="#cbd5e1" size="small" />
 ```
 
-### 4.8 `<Br />` (self-closing)
+### 5.8 `<Br />`
 
-Line break inside an inline context. Never at the top level.
+Line break inside inline content. Never top-level.
 
 ```xml
 <Paragraph>Line one<Br />Line two</Paragraph>
 ```
 
-### 4.9 `<OrderedList>` / `<UnorderedList>`
+### 5.9 `<OrderedList>` / `<UnorderedList>` and `<ListItem>`
 
-Children: `<ListItem>` only. No other content.
+Lists must contain at least one `<ListItem>`. `<ListItem>` accepts inline content and optional text block attributes except `align`.
+
+`<OrderedList>` attributes:
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `start` | number | Ordered list only — starting number |
-| `align` | string | `"left"`, `"center"`, `"right"` |
+| `start` | number | Starting number |
+| `align` | enum | `left`, `center`, `right` |
+
+`<UnorderedList>` attributes:
+
+| Attribute | Type | Notes |
+| --- | --- | --- |
+| `align` | enum | `left`, `center`, `right` |
 
 ```xml
 <OrderedList start="3">
-  <ListItem>First (labeled 3)</ListItem>
-  <ListItem>Second (labeled 4)</ListItem>
+  <ListItem>First item</ListItem>
+  <ListItem>Second item with <Strong>bold</Strong></ListItem>
 </OrderedList>
-
-<UnorderedList>
-  <ListItem>Bullet with <Em>italic</Em></ListItem>
-  <ListItem>Bullet with <Strong>bold</Strong></ListItem>
-</UnorderedList>
 ```
 
-### 4.10 `<ListItem>`
+### 5.10 `<Columns>` and `<ColumnItem>`
 
-Inline content. Only valid inside `<OrderedList>` or `<UnorderedList>`.
-
-Attributes: `fontSize`, `lineHeight`, `blockColor`, `blockBorderRadius`, padding attrs.
-
-### 4.11 `<Columns>` + `<ColumnItem>`
-
-`<Columns>` children must be `<ColumnItem>`. `<ColumnItem>` children are block tags (same set as top-level, except `<Style>`).
+Two-column layout. `<Columns>` must contain exactly two `<ColumnItem>` children. `<ColumnItem>` takes no attributes and contains block tags.
 
 `<Columns>` attributes:
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `gap` | number | Space between columns (px) |
-| `widths` | string | Comma-separated percentages, e.g. `"40,60"` or `"33,33,34"` |
-| `verticalAlignment` | string | `"top"`, `"middle"`, `"bottom"` |
+| `gap` | number | 12-150 pixels |
+| `widths` | string | Comma-separated percentages, usually `"50,50"` or `"40,60"` |
+| `verticalAlignment` | enum | `top`, `middle`, `bottom` |
 | `stackOnMobile` | boolean | |
 | `reverseOnMobile` | boolean | |
-| block style attrs | | `blockColor`, `blockBorderRadius`, padding |
-
-`<ColumnItem>` takes no attributes.
+| block style attrs | mixed | Block background / padding |
 
 ```xml
 <Columns gap="24" widths="40,60" verticalAlignment="middle">
@@ -236,173 +263,272 @@ Attributes: `fontSize`, `lineHeight`, `blockColor`, `blockBorderRadius`, padding
     <Paragraph>Left body.</Paragraph>
   </ColumnItem>
   <ColumnItem>
-    <Image src="https://example.com/pic.png" />
+    <Image src="https://cdn.example.com/pic.png" />
   </ColumnItem>
 </Columns>
 ```
 
-### 4.12 `<ComponentContainer>`
+### 5.11 `<Component>`
 
-Wraps a reusable email component. Children are block tags (no `<Style>`, no nested `<ComponentContainer>`).
+Embeds a reusable Loops email component. `componentId` is required.
+
+Two input forms are accepted:
+
+- Self-closing reference: `<Component componentId="cmp_123" />`
+- Explicit children: `<Component componentId="cmp_123"><Paragraph>Local override</Paragraph></Component>`
+
+The exporter always emits the explicit child form. Components cannot nest inside components.
+
+| Attribute | Type | Required | Notes |
+| --- | --- | :---: | --- |
+| `componentId` | string | yes | Team-owned component id |
+| block style attrs | mixed | | Block background / padding |
+
+```xml
+<Component componentId="cmp_123" />
+<Component componentId="cmp_123" blockColor="#f8fafc" paddingTop="16">
+  <Paragraph>Locally edited component content</Paragraph>
+</Component>
+```
+
+The old `<ComponentContainer>` tag is not valid in the current runtime.
+
+### 5.12 `<For>`
+
+Repeats block content for each item in an array. Must contain at least one block child.
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `componentId` | string | Reference to a saved component |
-| `id` | string | Per-instance container id |
-| block style attrs | | `blockColor`, `blockBorderRadius`, padding |
+| `variable` | variable expression | Must be a single braced, prefixed variable |
+
+Use arrays primarily for transactional data variables. Public editor docs currently describe arrays as transactional-email support.
 
 ```xml
-<ComponentContainer componentId="cmp_123" id="ctr_1">
-  <Paragraph>Header content</Paragraph>
-</ComponentContainer>
+<For variable="{data.products}">
+  <Paragraph>{data.products[].name} - {data.products[].price}</Paragraph>
+</For>
 ```
 
-### 4.13 `<Icons>` + `<Icon />`
+Accepted variable namespaces are `contact.`, `data.`, and `event.`:
 
-Social / inline icon row. Children are `<Icon />` only.
+```xml
+<For variable="{contact.contacts}"><Paragraph>{contact.email}</Paragraph></For>
+<For variable="{event.items}"><Paragraph>{event.items[].name}</Paragraph></For>
+```
+
+### 5.13 `<Section>`
+
+Clickable or styled block container. Use sections to create layout cards, groups, or framed content areas around related blocks. Contains block tags. Sections cannot nest inside sections.
+
+| Attribute | Type | Notes |
+| --- | --- | --- |
+| `href` | url / dynamic string | Supports variables |
+| `notrack` | boolean | `"true"` disables tracking |
+| block style attrs | mixed | Block background / padding |
+
+```xml
+<Section href="https://example.com/{contact.userId}" blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
+  <H2>Account summary</H2>
+  <Paragraph>Review your latest activity.</Paragraph>
+</Section>
+```
+
+### 5.14 `<Icons>` and `<Icon />`
+
+Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 
 `<Icons>` attributes:
 
 | Attribute | Type | Notes |
 | --- | --- | --- |
-| `align` | string | `"left"`, `"center"`, `"right"` |
-| `gap` | number | Space between icons (px) |
-| `size` | number | Icon size (px) |
-| `color` | hex | Default icon color |
-| block style attrs | | `blockColor`, `blockBorderRadius`, padding |
+| `align` | enum | `left`, `center`, `right` |
+| `gap` | number | 4-200 pixels |
+| `size` | number | 18-48 pixels |
+| `color` | enum | `#000000`, `#808080`, or `#ffffff` |
+| block style attrs | mixed | Block background / padding |
 
 `<Icon />` attributes:
 
 | Attribute | Type | Required | Notes |
 | --- | --- | :---: | --- |
-| `name` | string | yes | Icon name (e.g. `"twitter"`) |
+| `name` | string | yes | Known Font Awesome icon name |
 | `href` | url | | |
-| `color` | hex | | Overrides parent `<Icons>` color |
 | `notrack` | boolean | | |
 
 ```xml
-<Icons align="center" gap="20" size="24" color="#334155">
+<Icons align="center" gap="20" size="24" color="#000000">
   <Icon name="twitter" href="https://x.com/loops" />
   <Icon name="github" href="https://github.com/loops" />
 </Icons>
 ```
 
-### 4.14 `<Style />` (self-closing, top-level metadata)
+Common icon names include `twitter`, `instagram`, `linkedin`, `youtube`, `github`, `discord`, `envelope`, `link`, and `phone`. Unknown icon names are validation errors. Per-icon `color` is not supported by the current runtime.
 
-At most one per document. Must appear before all other tags. Does not produce rendered content — it sets document-level styling. All attributes are optional.
+### 5.15 `<Style />`
+
+Self-closing top-level metadata. It does not render content. All attributes are optional. Use `themeId` for the current theme/style-template id.
 
 | Attribute | Type |
 | --- | --- |
-| `styleTemplateId` | string |
-| `backgroundColor`, `backgroundXPadding`, `backgroundYPadding` | hex / number |
-| `bodyColor`, `bodyXPadding`, `bodyYPadding`, `bodyFontFamily`, `bodyFontCategory` | mixed |
-| `borderColor`, `borderWidth`, `borderRadius` | mixed |
-| `buttonBodyColor`, `buttonBodyXPadding`, `buttonBodyYPadding` | mixed |
-| `buttonBorderColor`, `buttonBorderWidth`, `buttonBorderRadius` | mixed |
-| `buttonTextColor`, `buttonTextFontSize` | mixed |
-| `dividerColor`, `dividerBorderWidth` | mixed |
-| `textBaseColor`, `textBaseFontSize`, `textBaseLineHeight`, `textBaseLetterSpacing` | mixed |
-| `textLinkColor` | hex |
-| `heading1Color`, `heading1FontSize`, `heading1LineHeight`, `heading1LetterSpacing` | mixed |
-| `heading2Color`, `heading2FontSize`, `heading2LineHeight`, `heading2LetterSpacing` | mixed |
-| `heading3Color`, `heading3FontSize`, `heading3LineHeight`, `heading3LetterSpacing` | mixed |
+| `themeId` | string |
+| `backgroundColor`, `backgroundXPadding`, `backgroundYPadding` | string / number |
+| `bodyColor`, `bodyXPadding`, `bodyYPadding`, `bodyFontFamily`, `bodyFontCategory` | string / number |
+| `borderColor`, `borderWidth`, `borderRadius` | string / number |
+| `buttonBodyColor`, `buttonBodyXPadding`, `buttonBodyYPadding` | string / number |
+| `buttonBorderColor`, `buttonBorderWidth`, `buttonBorderRadius` | string / number |
+| `buttonTextColor`, `buttonTextFormat`, `buttonTextFontSize` | string / number |
+| `dividerColor`, `dividerBorderWidth` | string / number |
+| `textBaseColor`, `textBaseFontSize`, `textBaseLineHeight`, `textBaseLetterSpacing` | string / number |
+| `textLinkColor` | string |
+| `heading1Color`, `heading1FontSize`, `heading1LineHeight`, `heading1LetterSpacing` | string / number |
+| `heading2Color`, `heading2FontSize`, `heading2LineHeight`, `heading2LetterSpacing` | string / number |
+| `heading3Color`, `heading3FontSize`, `heading3LineHeight`, `heading3LetterSpacing` | string / number |
 
 ```xml
-<Style styleTemplateId="st_123" bodyColor="#ffffff" bodyYPadding="12" />
+<Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" />
 <Paragraph>Hello</Paragraph>
 ```
 
+If `themeId` references a theme that already defines body/background colors, duplicate `bodyColor` and `backgroundColor` attributes are not required unless you want to override the theme. If `bodyColor` is omitted and the theme does not provide one, the `backgroundColor` is visible behind the email content instead of a distinct body/card surface.
+
+Do not use the old `styleTemplateId` attribute; the current LMX attribute is `themeId`.
+
 ---
 
-## 5. Inline Tags
+## 6. Inline Tags
 
-Inline tags live inside `<H1>`/`<H2>`/`<H3>`/`<Paragraph>`/`<Quote>`/`<ListItem>` and inside one another (they compose). They are **never** valid at the top level.
+Inline tags live inside inline-content blocks (`<H1>`, `<H2>`, `<H3>`, `<Paragraph>`, `<Quote>`, `<ListItem>`) and can nest inside one another.
 
 | Tag | Effect |
 | --- | --- |
-| `<Strong>…</Strong>` | Bold |
-| `<Em>…</Em>` | Italic |
-| `<Underline>…</Underline>` | Underline |
-| `<Strike>…</Strike>` | Strikethrough |
-| `<Code>…</Code>` | Inline code format |
-| `<Text>…</Text>` | No format — carrier for `textColor` only |
-| `<Link href="…">…</Link>` | Hyperlink |
+| `<Strong>...</Strong>` | Bold |
+| `<Em>...</Em>` | Italic |
+| `<Underline>...</Underline>` | Underline |
+| `<Strike>...</Strike>` | Strikethrough |
+| `<Code>...</Code>` | Inline code |
+| `<Text>...</Text>` | No format; carries `textColor` only |
+| `<Link href="...">...</Link>` | Hyperlink |
 
-All format tags (and `<Text>`) accept an optional `textColor` hex attribute (`"#f00"` or `"#ff0000"`). Non-hex values are rejected.
+All format tags plus `<Text>` accept optional `textColor`. It must be a 3- or 6-digit hex color such as `#f00` or `#ff0000`.
 
 `<Link>` attributes:
 
 | Attribute | Type | Required | Notes |
 | --- | --- | :---: | --- |
-| `href` | url | yes | |
+| `href` | url / dynamic string | yes | Supports variables |
 | `notrack` | boolean | | `"true"` disables tracking |
 
 ```xml
-<Paragraph>Mixed <Strong>bold</Strong>, <Em>italic</Em>, <Strong><Em>both</Em></Strong>.</Paragraph>
-<Paragraph>A <Link href="https://example.com">link</Link> and <Link href="https://x.com" notrack="true">an untracked link</Link>.</Paragraph>
-<Paragraph>Color only: <Text textColor="#f00">red</Text>. Colored bold: <Strong textColor="#00f">blue bold</Strong>.</Paragraph>
+<Paragraph>Mixed <Strong>bold</Strong>, <Em>italic</Em>, and <Strong><Em>both</Em></Strong>.</Paragraph>
+<Paragraph>A <Link href="https://example.com/{contact.userId}">dynamic link</Link>.</Paragraph>
+<Paragraph><Text textColor="#f00">Red text</Text> and <Strong textColor="#00f">blue bold text</Strong>.</Paragraph>
 ```
-
-Inner `textColor` wins when nested. Example: `<Text textColor="#f00"><Strong textColor="#00f">x</Strong></Text>` → `x` is bold + blue.
 
 ---
 
-## 6. Variables
+## 7. Variables And Dynamic Content
 
-Variables are written as `{name}` **inside text content** of inline-content tags (`<Paragraph>`, headings, `<Quote>`, `<ListItem>`, and inside inline tags). They are **not** valid:
+LMX variables use braced expressions. In the current runtime, production-safe LMX should use explicit namespaces:
 
-- Inside `<CodeBlock>` or `<Button>` (text-only — braces are literal there)
-- At the top level (wrap in `<Paragraph>` first)
-
-Three kinds, disambiguated by prefix:
-
-| Syntax | Kind | Meaning |
+| Syntax | Kind | Common email types |
 | --- | --- | --- |
-| `{firstName}` | merge tag | Contact property (bare name), used in campaigns and loop emails |
-| `{contact.email}` | merge tag | Contact property (explicit `contact.` prefix), used in campaigns and loop emails |
+| `{contact.firstName}` | Contact property / merge tag | Campaigns and loop emails |
+| `{data.orderId}` | Data variable | Transactional emails |
+| `{event.plan}` | Event property | Event-triggered loop emails |
+| `{system.unsubscribe_link}` | System variable | System/footer usage |
 
-Examples:
+Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX. Legacy MJML/upload syntax still uses `{firstName}`, `{DATA_VARIABLE:name}`, and `{EVENT_PROPERTY:name}`, but LMX export converts those to `{contact.name}`, `{data.name}`, and `{event.name}`.
+
+Default contact properties currently include:
+
+```text
+firstName, lastName, email, notes, source, userGroup, userId,
+subscribed, createdAt
+```
+
+Loops also has hidden/internal contact properties such as `__critical_audience`, `__marketing_audience`, and `__domain`; do not use those unless you are deliberately preserving exported content that already contains them. Custom contact properties are referenced by API name, for example `{contact.companyName}`.
+
+Data variable names may include dots, hyphens, underscores, brackets, and array notation:
 
 ```xml
-<Paragraph>Hello {firstName}!</Paragraph>
-<Paragraph>Order shipped to {contact.email}.</Paragraph>
+<Paragraph>Order {data.order.id} total: {data.order-total}</Paragraph>
+<For variable="{data.products}">
+  <Paragraph>{data.products[].name}: {data.products[].price}</Paragraph>
+</For>
 ```
+
+Variables are valid in:
+
+- inline content: headings, paragraphs, quotes, list items, and inline tags
+- button text
+- dynamic attributes declared by the runtime:
+  - `<Button href="...">`
+  - `<Link href="...">`
+  - `<Image alt="..." href="..." dynamicSrc="...">`
+  - `<Section href="...">`
+  - `<For variable="{...}">`
+
+Variables are not valid:
+
+- at the top level
+- inside `<CodeBlock>` (braces are literal)
+- inside unsupported attributes such as `<Image src="{data.url}" />`
+- unprefixed in validated LMX (`{firstName}` should be `{contact.firstName}`)
+
+### Fallback Values
+
+LMX does not currently have inline fallback syntax. Do not invent forms such as `{contact.firstName|there}`, `{contact.firstName:there}`, `{contact.firstName ?? "there"}`, or attributes like `fallback="there"`.
+
+Fallbacks for contact properties, event properties, and data variables are editor/email-message metadata outside the LMX string. The current LMX import/export path serializes only the variable reference itself:
+
+```xml
+<Paragraph>Hi {contact.firstName}</Paragraph>
+```
+
+If a user asks for fallback behavior in LMX output, mention that the LMX markup can reference the variable, but fallback values must be configured through the Loops editor or metadata path that owns the email message fallbacks.
 
 ---
 
-## 7. Common Mistakes
+## 8. Common Mistakes
 
 | Mistake | Fix |
 | --- | --- |
-| `<paragraph>`, `<p>`, `<P>` | `<Paragraph>` |
-| `<Image src="x.png">` (no self-close) | `<Image src="x.png" />` |
-| Plain text at top level | Wrap in `<Paragraph>…</Paragraph>` |
-| `<Strong>` at top level | Wrap in `<Paragraph><Strong>…</Strong></Paragraph>` |
-| `<ListItem>` outside a list | Nest in `<UnorderedList>` or `<OrderedList>` |
-| `<ColumnItem>` outside `<Columns>` | Wrap in `<Columns>…</Columns>` |
-| `<Icon />` outside `<Icons>` | Wrap in `<Icons>…</Icons>` |
-| `{firstName}` inside `<CodeBlock>` | These are text-only — braces are literal |
-| `textColor="red"` | Use hex: `textColor="#f00"` or `textColor="#ff0000"` |
-| Two `<Style />` tags | Only one `<Style />` per document |
+| `<paragraph>`, `<p>`, `<P>` | Use `<Paragraph>` |
+| `<Image src="x.png">` | Use `<Image src="x.png" />` |
+| Plain text at top level | Wrap in `<Paragraph>...</Paragraph>` |
+| `<Strong>` at top level | Wrap in a block such as `<Paragraph>` |
+| `<Button><Strong>Click</Strong></Button>` | Button text cannot contain inline tags |
+| `{firstName}` in LMX | Use `{contact.firstName}` |
+| `{DATA_VARIABLE:id}` in LMX | Use `{data.id}` |
+| `{EVENT_PROPERTY:plan}` in LMX | Use `{event.plan}` |
+| `{contact.firstName|there}` or similar fallback syntax | No inline fallback syntax exists in LMX; configure fallbacks outside the LMX string |
+| `<Image src="{data.imageUrl}" />` | Use static `src` plus `dynamicSrc="{data.imageUrl}"` |
+| `<ComponentContainer>` | Use `<Component>` |
+| `<Style styleTemplateId="st_123" />` | Use `<Style themeId="st_123" />` |
+| `<Columns>` with one or three `<ColumnItem>` children | Use exactly two `<ColumnItem>` children |
+| `<Icon color="#f00" />` | Set `color` on `<Icons>` and use one of the allowed colors |
+| `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
+| `<For variable="data.products">` | Use braces: `<For variable="{data.products}">` |
+| `<For variable="{items}">` | Use a namespace: `{contact.items}`, `{data.items}`, or `{event.items}` |
+| Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
 
 ---
 
-## 8. Full Example Document
+## 9. Full Example Document
 
 ```xml
-<Style styleTemplateId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="16" />
-<H1>Welcome, {firstName}</H1>
-<Paragraph fontSize="18" lineHeight="150">
-  Thanks for signing up on {signupDate}. Here's what <Strong>you</Strong>
-  can do next:
+<Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" textBaseColor="#0f172a" />
+<H1>Welcome, {contact.firstName}</H1>
+<Paragraph fontSize="18" lineHeight="150" paddingBottom="16">
+  Thanks for signing up. Your order {data.order.id} is ready.
 </Paragraph>
 <UnorderedList>
   <ListItem>Read <Link href="https://loops.so/docs">the docs</Link></ListItem>
   <ListItem><Strong>Invite</Strong> your team</ListItem>
   <ListItem>Explore <Em>integrations</Em></ListItem>
 </UnorderedList>
-<Button href="https://loops.so/start" size="large" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12">Get started</Button>
+<Button href="https://app.example.com/orders/{data.order.id}" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12" paddingTop="24" paddingBottom="24">View order {data.order.id}</Button>
 <Divider align="center" width="80" size="small" color="#cbd5e1" />
 <Columns gap="24" widths="50,50" verticalAlignment="top">
   <ColumnItem>
@@ -410,14 +536,19 @@ Examples:
     <Paragraph>Start with the quickstart.</Paragraph>
   </ColumnItem>
   <ColumnItem>
-    <H3>Community</H3>
-    <Paragraph>Join other builders.</Paragraph>
+    <Image src="https://cdn.example.com/product-placeholder.png" dynamicSrc="{data.productImageUrl}" alt="{data.productName}" />
   </ColumnItem>
 </Columns>
-<Icons align="center" gap="20" size="24" color="#334155">
+<Section href="https://example.com/account/{contact.userId}" blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
+  <Paragraph>Review your account settings.</Paragraph>
+</Section>
+<For variable="{data.products}">
+  <Paragraph>{data.products[].name}: {data.products[].price}</Paragraph>
+</For>
+<Icons align="center" gap="20" size="24" color="#000000">
   <Icon name="twitter" href="https://x.com/loops" />
   <Icon name="github" href="https://github.com/loops" />
 </Icons>
-<Quote fontSize="16">"Loops made our lifecycle emails effortless." — {contact.email}</Quote>
+<Quote fontSize="16">"Loops made our lifecycle emails effortless." - {contact.email}</Quote>
 <CodeBlock>curl -X POST https://app.loops.so/api/v1/events</CodeBlock>
 ```

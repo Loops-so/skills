@@ -12,7 +12,7 @@ description: >
   intended for Loops. Do not trigger for questions about the Loops HTTP API,
   SDK integration, or CLI unless email body content is also involved.
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # LMX Skill
@@ -54,10 +54,16 @@ Before returning any LMX output, verify:
 - [ ] All tags are PascalCase and in the allowed set
 - [ ] All self-closing tags use `/>` (e.g. `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`)
 - [ ] No text or inline tags at the top level
-- [ ] Variables use `{name}` syntax and are only inside inline-content tags (not inside `<CodeBlock>` or `<Button>`)
-- [ ] `<For variable="…">` uses braces and contains at least one block child
-- [ ] `<Style />` appears at most once, before all other tags
-- [ ] `bodyColor` and `backgroundColor` are both set on `<Style />` (unless user opted out)
+- [ ] Variables use explicit LMX namespaces: `{contact.name}`, `{data.name}`, `{event.name}`, or `{system.name}`
+- [ ] Variables only appear where supported: inline content, button text, supported dynamic attrs, or `<For variable="{...}">`
+- [ ] No inline fallback syntax is invented; fallbacks live outside the LMX string
+- [ ] `<Button>` text has no inline tags, but can contain variables; `<CodeBlock>` treats braces literally
+- [ ] `<For variable="...">` uses braces, is prefixed, and contains at least one block child
+- [ ] `<Style />` appears at most once as a top-level tag; put it first in generated output
+- [ ] Body/background colors are intentional: supplied by `themeId` or explicit `bodyColor`/`backgroundColor`
 - [ ] No same-color-on-same-color situations (check text vs block color, icon color vs background, etc.)
 - [ ] Sufficient Y-spacing on block elements
-- [ ] No `blockBorderRadius` applied to items inside `<Columns>` (columns can't be rounded yet)
+- [ ] Current tag names are used: `<Component>`, not `<ComponentContainer>`; `themeId`, not `styleTemplateId`
+- [ ] `<Columns>` has exactly two `<ColumnItem>` children
+- [ ] Dynamic images use static `src` plus `dynamicSrc`, not variables in `src`
+- [ ] `<Icons color>` uses one of `#000000`, `#808080`, or `#ffffff`; `<Icon>` has no `color` attr
