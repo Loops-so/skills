@@ -1,5 +1,5 @@
 ---
-name: cli
+name: loops-cli
 description: >
   Use this skill whenever the user wants to work with the Loops CLI from the
   terminal. This includes installing or updating the CLI, authenticating,
@@ -38,7 +38,7 @@ When this skill is active:
 3. Use `--output json` when the result needs to feed another tool or script.
 4. Use named stored keys plus `--team` when the user works across multiple Loops teams.
 5. Avoid printing secrets. Prefer keyring-backed auth or environment variables over hardcoded API keys.
-6. If the task becomes application-code integration or exact HTTP payload design, use the separate `api` skill.
+6. If the task becomes application-code integration or exact HTTP payload design, use the separate `loops-api` skill.
 
 Official references:
 

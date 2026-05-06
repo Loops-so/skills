@@ -1,5 +1,5 @@
 ---
-name: api
+name: loops-api
 description: >
   Use this skill whenever the user wants to integrate Loops from application
   code, backend services, webhook handlers, or server-side automation. This
@@ -38,7 +38,7 @@ When this skill is active:
 3. Prefer raw HTTP only when no SDK is available or the user needs exact payload control.
 4. Keep Loops requests server-side.
 5. Verify exact behavior against the official docs or OpenAPI spec when details matter.
-6. If the task is primarily about Loops CLI install, auth, shell usage, or command help, use the separate `cli` skill.
+6. If the task is primarily about Loops CLI install, auth, shell usage, or command help, use the separate `loops-cli` skill.
 
 Official references:
 
@@ -56,7 +56,7 @@ Official references:
   - repeatable integrations
   Read `references/http-api.md`
 
-If the user is working from the terminal instead of writing application code, use the `cli` skill.
+If the user is working from the terminal instead of writing application code, use the `loops-cli` skill.
 
 ## Category Routing
 
