@@ -13,7 +13,7 @@ LMX (Loops Markup Language) is an XML-based email content format for the Loops e
 2. **Self-closing tags must use `/>`.** Example: `<Image src="..." />`, `<Br />`, `<Divider />`.
 3. **Only documented tags are valid.** Unknown tags fail parsing.
 4. **Unknown attributes are warnings and have no effect.** Do not invent attributes.
-5. **Required attributes must be present.** For example, `<Image />` without `src` is invalid.
+5. **Required attributes must be present.** For example, `<Image />` without `src` is invalid. Missing required attributes can make email-message updates fail with HTTP 422 because LMX cannot compile.
 6. **All attribute values are quoted strings.** Numbers and booleans are written as strings: `width="400"`, `notrack="true"`.
 7. **Top-level text and variables are invalid.** Wrap all text and variables in a block tag such as `<Paragraph>`.
 8. **Whitespace between block tags is ignored.** Indent and line-break freely.
@@ -145,18 +145,18 @@ Optional attributes: `fontSize`, `lineHeight`, and block style attrs.
 
 Text content with variables allowed. Inline tags such as `<Strong>` and `<Link>` are invalid inside buttons.
 
-| Attribute | Type | Notes |
-| --- | --- | --- |
-| `href` | url / dynamic string | Supports variables |
-| `bgColor`, `textColor`, `borderColor`, `blockColor` | hex color | |
-| `borderRadius` | number | 0-999 |
-| `borderWidth` | number | 0-16 |
-| `innerXPadding`, `innerYPadding` | number | 0-100 |
-| `fontSize` | number | 6-64 |
-| `align` | enum | `left`, `center`, `right` |
-| `notrack` | boolean | `"true"` disables tracking for this link |
-| `textFormat` | number | Format bitmask; use mainly when preserving exported LMX |
-| block style attrs | mixed | Block background / padding |
+| Attribute | Type | Required | Notes |
+| --- | --- | :---: | --- |
+| `href` | url / dynamic string | yes | Supports variables |
+| `bgColor`, `textColor`, `borderColor`, `blockColor` | hex color | | |
+| `borderRadius` | number | | 0-999 |
+| `borderWidth` | number | | 0-16 |
+| `innerXPadding`, `innerYPadding` | number | | 0-100 |
+| `fontSize` | number | | 6-64 |
+| `align` | enum | | `left`, `center`, `right` |
+| `notrack` | boolean | | `"true"` disables tracking for this link |
+| `textFormat` | number | | Format bitmask; use mainly when preserving exported LMX |
+| block style attrs | mixed | | Block background / padding |
 
 ```xml
 <Button href="https://loops.so/start" bgColor="#000000" textColor="#ffffff" borderRadius="12">Get started</Button>
@@ -487,6 +487,10 @@ Fallbacks for contact properties, event properties, and data variables are edito
 
 If a user asks for fallback behavior in LMX output, mention that the LMX markup can reference the variable, but fallback values must be configured through the Loops editor or metadata path that owns the email message fallbacks.
 
+### Footer Behavior
+
+Do not hand-code the legal footer, address, or unsubscribe block in LMX content. Loops appends address and unsubscribe automatically. A team's branded footer component is fine above the auto-footer.
+
 ---
 
 ## 8. Common Mistakes
@@ -495,6 +499,9 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 | --- | --- |
 | `<paragraph>`, `<p>`, `<P>` | Use `<Paragraph>` |
 | `<Image src="x.png">` | Use `<Image src="x.png" />` |
+| `<Image />` | Add the required static `src`: `<Image src="https://..." />` |
+| `<Button>Click</Button>` | Add the required `href`: `<Button href="https://...">Click</Button>` |
+| `<Link>docs</Link>` | Add the required `href`: `<Link href="https://...">docs</Link>` |
 | Plain text at top level | Wrap in `<Paragraph>...</Paragraph>` |
 | `<Strong>` at top level | Wrap in a block such as `<Paragraph>` |
 | `<Button><Strong>Click</Strong></Button>` | Button text cannot contain inline tags |
@@ -512,6 +519,7 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 | `<For variable="{items}">` | Use a namespace: `{contact.items}`, `{data.items}`, or `{event.items}` |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
+| Hand-coded legal footer, address, or unsubscribe block | Omit it; Loops appends address and unsubscribe automatically |
 
 ---
 

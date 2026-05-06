@@ -12,7 +12,7 @@ description: >
   intended for Loops. Do not trigger for questions about the Loops HTTP API,
   SDK integration, or CLI unless email body content is also involved.
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # LMX Skill
@@ -53,6 +53,8 @@ Before returning any LMX output, verify:
 
 - [ ] All tags are PascalCase and in the allowed set
 - [ ] All self-closing tags use `/>` (e.g. `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`)
+- [ ] XML-sensitive characters are escaped: `&` as `&amp;`, `<` as `&lt;`, and `"` in attributes as `&quot;`
+- [ ] Required attrs are present, especially `src` on `<Image />` and `href` on `<Button>` and `<Link>`
 - [ ] No text or inline tags at the top level
 - [ ] Variables use explicit LMX namespaces: `{contact.name}`, `{data.name}`, `{event.name}`, or `{system.name}`
 - [ ] Variables only appear where supported: inline content, button text, supported dynamic attrs, or `<For variable="{...}">`
@@ -67,3 +69,4 @@ Before returning any LMX output, verify:
 - [ ] `<Columns>` has exactly two `<ColumnItem>` children
 - [ ] Dynamic images use static `src` plus `dynamicSrc`, not variables in `src`
 - [ ] `<Icons color>` uses one of `#000000`, `#808080`, or `#ffffff`; `<Icon>` has no `color` attr
+- [ ] No hand-coded legal footer, address, or unsubscribe block; Loops appends those automatically. A branded team footer component can appear above the auto-footer
