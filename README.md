@@ -30,6 +30,22 @@ npx skills add https://github.com/Loops-so/skills --global --skill loops-email-s
 
 Project-level installs are also supported. Omit `--global` if you want the skills scoped to the current repository instead of user-level.
 
+### Pin A Release
+
+This repo is versioned with GitHub Releases. For stable installs, pin a release tag instead of installing from the default branch:
+
+```bash
+npx skills add https://github.com/Loops-so/skills#v1.0.0 --global
+```
+
+### Upgrading From Unprefixed Skill Names
+
+Older installs used the unprefixed skill names `api`, `cli`, `email-sending-best-practices`, and `lmx`. Installing the renamed `loops-*` skills does not automatically remove those old local skills. After installing the prefixed skills, remove the old names:
+
+```bash
+npx skills remove api cli email-sending-best-practices lmx --global
+```
+
 ## Verify Install
 
 After installation, try a task that should trigger one of the skills:
@@ -133,6 +149,16 @@ Skill file: [skills/loops-lmx/SKILL.md](./skills/loops-lmx/SKILL.md)
 - The Loops CLI has its own skill in this repo.
 - The Loops CLI itself is still pre-release and may change faster than the API and SDK docs.
 - The LMX skill tracks production LMX behavior in the Loops editor and content API.
+
+## Versioning And Releases
+
+Loops skills are versioned as a single repo-level bundle with GitHub Releases and semver-style tags such as `v1.0.0`.
+
+- Major releases include breaking install or behavior changes, such as renamed or removed skills. Release notes must include migration steps.
+- Minor releases add skills, broaden documented capabilities, or refresh substantial product behavior.
+- Patch releases correct docs, examples, references, or narrow behavior details without changing install names.
+
+Use the GitHub release notes as the changelog for user-facing upgrade guidance.
 
 ## Source Of Truth
 
