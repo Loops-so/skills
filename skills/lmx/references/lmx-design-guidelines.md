@@ -4,20 +4,27 @@ These guidelines apply to every LMX document unless the user explicitly override
 
 ---
 
-## Always Set Body And Background Color
+## Set Body And Background Color
 
-Every document must include a `<Style />` tag with both `bodyColor` and `backgroundColor` set. Do not skip either.
+Every document should have intentional body and background colors, either from a referenced theme or from explicit `<Style />` overrides.
 
 - `bodyColor` — the email body/card background (the centered content area)
 - `backgroundColor` — the page/canvas behind the body
 
-Setting both gives the email a clear visual structure and prevents the renderer from falling back to default colors that may clash with your content.
+If `<Style />` has a `themeId` and that theme already defines suitable body and background colors, do not duplicate those attributes unless you are intentionally overriding the theme. If no theme is used, or the theme colors are unknown, set both `bodyColor` and `backgroundColor` explicitly.
+
+Setting both colors, either via theme or overrides, gives the email a clear visual structure and prevents the renderer from falling back to defaults that may clash with your content.
+
+If `bodyColor` is not set, the email body does not get a separate card/background color, so the `backgroundColor` shows through behind the content. That can be useful for plain/full-width designs, but for card-like styled emails set both values intentionally.
 
 ```xml
-<!-- Do this -->
+<!-- Good: standalone colors -->
 <Style bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" />
 
-<!-- Not this — missing backgroundColor -->
+<!-- Good: theme provides colors; only override what needs changing -->
+<Style themeId="st_123" bodyYPadding="24" />
+
+<!-- Not this: missing backgroundColor without a theme known to provide it -->
 <Style bodyColor="#ffffff" />
 ```
 
@@ -77,16 +84,16 @@ Use `bodyYPadding` on `<Style />` for global top/bottom padding inside the body 
 
 ---
 
-## Columns Cannot Be Rounded
+## Rounded Column Layouts
 
-`<Columns>` does not support border-radius. Do **not** apply `blockBorderRadius` to `<Columns>` or to block elements inside `<ColumnItem>` with the intention of rounding the column itself.
+The current LMX runtime supports `blockColor` and `blockBorderRadius` on `<Columns>`. If you need a rounded two-column card, put the shared background and radius on `<Columns>` itself.
 
-Why: columns render as adjacent table cells. Two rounded blocks placed side by side produce awkward mismatched corners that look broken — each block has its own rounded corner butting up against the other.
+Avoid applying matching `blockBorderRadius` values to separate block elements inside each `<ColumnItem>` with the intention of rounding the whole column layout. Columns render as adjacent table cells; two independently rounded inner blocks placed side by side can produce awkward mismatched corners.
 
 Avoid this pattern:
 
 ```xml
-<!-- Bad — rounded blocks in columns look broken -->
+<!-- Bad - rounded inner blocks in columns look broken -->
 <Columns gap="0" widths="50,50">
   <ColumnItem>
     <Paragraph blockColor="#e2e8f0" blockBorderRadius="12">Left</Paragraph>
@@ -97,7 +104,36 @@ Avoid this pattern:
 </Columns>
 ```
 
+Use this pattern instead:
+
+```xml
+<Columns gap="24" widths="50,50" blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
+  <ColumnItem>
+    <Paragraph>Left</Paragraph>
+  </ColumnItem>
+  <ColumnItem>
+    <Paragraph>Right</Paragraph>
+  </ColumnItem>
+</Columns>
+```
+
 Rounding is fine on standalone blocks (outside `<Columns>`), on `<Button>`, and on `<Image />`.
+
+---
+
+## Sections For Cards And Groups
+
+Use `<Section>` when a design needs a card, group, or framed content area around multiple related blocks. Put the background, radius, padding, and optional link on the section instead of repeating the same styling on every child block.
+
+```xml
+<Section blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingRight="16" paddingBottom="16" paddingLeft="16">
+  <H2>Account summary</H2>
+  <Paragraph>Your latest report is ready.</Paragraph>
+  <Button href="https://example.com/report" bgColor="#0f172a" textColor="#ffffff">View report</Button>
+</Section>
+```
+
+Do not nest `<Section>` inside another `<Section>`. If you need grouped content inside a card, use ordinary child blocks, lists, columns, or dividers within one section.
 
 ---
 
