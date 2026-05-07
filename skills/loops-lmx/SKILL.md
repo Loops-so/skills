@@ -64,7 +64,6 @@ Before returning any LMX output, verify:
 - [ ] Body/background colors are intentional: supplied by `themeId` or explicit `bodyColor`/`backgroundColor`
 - [ ] No same-color-on-same-color situations (check text vs block color, icon color vs background, etc.)
 - [ ] Sufficient Y-spacing on block elements
-- [ ] Current tag names are used: `<Component>`, not `<ComponentContainer>`; `themeId`, not `styleTemplateId`
 - [ ] `<Columns>` has exactly two `<ColumnItem>` children
 - [ ] Dynamic images use static `src` plus `dynamicSrc`, not variables in `src`
 - [ ] `<Icons color>` uses one of `#000000`, `#808080`, or `#ffffff`; `<Icon>` has no `color` attr

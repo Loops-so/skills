@@ -18,7 +18,8 @@ LMX (Loops Markup Language) is an XML-based email content format for the Loops e
 8. **Whitespace between block tags is ignored.** Indent and line-break freely.
 9. **Escape `<` and `&` in text** as `&lt;` and `&amp;`. Escape `"` and `&` in attribute values as `&quot;` and `&amp;`.
 10. **One `<Style />` tag maximum.** It is top-level metadata. Prefer putting it first; the exporter always emits it first.
-11. **Content API payload limit:** LMX sent through the email-message API must be at most 100 KB.
+11. **LMX is separate from MJML upload syntax.** Do not use MJML tags or legacy dynamic tag prefixes inside LMX.
+12. **Content API payload limit:** LMX sent through the email-message API must be at most 100 KB.
 
 ---
 
@@ -65,7 +66,7 @@ Nesting summary:
 - `<CodeBlock>` -> raw literal text; variables are not parsed.
 - `<OrderedList>`, `<UnorderedList>` -> one or more `<ListItem>` children.
 - `<Columns>` -> exactly two `<ColumnItem>` children.
-- `<ColumnItem>` -> block tags, excluding `<Style>`.
+- `<ColumnItem>` -> block tags, excluding `<Style>` and nested `<Columns>`.
 - `<Component>` -> block tags, excluding `<Style>` and nested `<Component>`.
 - `<Section>` -> block tags, excluding `<Style>` and nested `<Section>`.
 - `<Icons>` -> one to 100 `<Icon />` children.
@@ -238,7 +239,7 @@ Lists must contain at least one `<ListItem>`. `<ListItem>` accepts inline conten
 
 ### 5.10 `<Columns>` and `<ColumnItem>`
 
-Two-column layout. `<Columns>` must contain exactly two `<ColumnItem>` children. `<ColumnItem>` takes no attributes and contains block tags.
+Two-column layout. `<Columns>` must contain exactly two `<ColumnItem>` children. `<ColumnItem>` takes no attributes and contains block tags, excluding nested columns.
 
 `<Columns>` attributes:
 
@@ -272,7 +273,7 @@ Two input forms are accepted:
 - Self-closing reference: `<Component componentId="cmp_123" />`
 - Explicit children: `<Component componentId="cmp_123"><Paragraph>Local override</Paragraph></Component>`
 
-The exporter always emits the explicit child form. Components cannot nest inside components.
+Components cannot nest inside components.
 
 | Attribute | Type | Required | Notes |
 | --- | --- | :---: | --- |
@@ -285,8 +286,6 @@ The exporter always emits the explicit child form. Components cannot nest inside
   <Paragraph>Locally edited component content</Paragraph>
 </Component>
 ```
-
-The old `<ComponentContainer>` tag is not valid LMX.
 
 ### 5.12 `<Section>`
 
@@ -362,8 +361,6 @@ Self-closing top-level metadata. It does not render content. All attributes are 
 ```
 
 If `themeId` references a theme that already defines body/background colors, duplicate `bodyColor` and `backgroundColor` attributes are not required unless you want to override the theme. If `bodyColor` is omitted and the theme does not provide one, the `backgroundColor` is visible behind the email content instead of a distinct body/card surface.
-
-Do not use the old `styleTemplateId` attribute; the supported LMX attribute is `themeId`.
 
 ---
 
@@ -470,8 +467,6 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 | `{firstName}` in LMX | Use `{contact.firstName}` |
 | `{contact.firstName|there}` or similar fallback syntax | No inline fallback syntax exists in LMX; configure fallbacks outside the LMX string |
 | `<Image src="{contact.imageUrl}" />` | Use static `src` plus `dynamicSrc="{contact.imageUrl}"` |
-| `<ComponentContainer>` | Use `<Component>` |
-| `<Style styleTemplateId="st_123" />` | Use `<Style themeId="st_123" />` |
 | `<Columns>` with one or three `<ColumnItem>` children | Use exactly two `<ColumnItem>` children |
 | `<Icon color="#f00" />` | Set `color` on `<Icons>` and use one of the allowed colors |
 | `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
@@ -484,7 +479,7 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 ## 9. Full Example Document
 
 ```xml
-<Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" textBaseColor="#0f172a" />
+<Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f3f4f6" bodyYPadding="24" textBaseColor="#111827" />
 <H1>Welcome, {contact.firstName}</H1>
 <Paragraph fontSize="16" lineHeight="150">
   Thanks for joining. Read <Link href="https://loops.so/docs">the docs</Link> to get started.
@@ -494,8 +489,8 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
   <ListItem>Add your audience</ListItem>
   <ListItem>Send a test email</ListItem>
 </UnorderedList>
-<Button href="https://app.example.com/account/{contact.userId}" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12">Open account</Button>
-<Divider align="center" width="80" color="#cbd5e1" />
+<Button href="https://app.example.com/account/{contact.userId}" align="center" bgColor="#000000" textColor="#ffffff" borderRadius="12">Open account</Button>
+<Divider width="80" color="#d1d5db" />
 <Columns gap="24" widths="50,50" verticalAlignment="top">
   <ColumnItem>
     <H3>Docs</H3>
@@ -512,6 +507,4 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
   <Icon name="twitter" href="https://x.com/loops" />
   <Icon name="linkedin" href="https://www.linkedin.com/company/loops" />
 </Icons>
-<Quote fontSize="16">"Loops made our lifecycle emails effortless." - {contact.email}</Quote>
-<CodeBlock>curl https://app.loops.so/api/v1/api-key</CodeBlock>
 ```
