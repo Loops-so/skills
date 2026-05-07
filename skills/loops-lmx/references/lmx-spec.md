@@ -1,4 +1,4 @@
-# LMX Public Specification
+# LMX Specification
 
 Synced on 2026-05-07.
 
@@ -12,7 +12,7 @@ LMX (Loops Markup Language) is an XML-based email content format for the Loops e
 2. **Self-closing tags must use `/>`.** Example: `<Image src="..." />`, `<Br />`, `<Divider />`.
 3. **Only documented tags are valid.** Unknown tags fail parsing.
 4. **Unknown attributes are warnings and have no effect.** Do not invent attributes.
-5. **Required attributes must be present.** Public/current required attrs include `src` on `<Image />`, `componentId` on `<Component>`, `name` on `<Icon />`, and `href` on `<Link>`. Missing required attributes can make email-message updates fail with HTTP 422 because LMX cannot compile.
+5. **Required attributes must be present.** Required attrs include `src` on `<Image />`, `componentId` on `<Component>`, `name` on `<Icon />`, and `href` on `<Link>`. Missing required attributes can make email-message updates fail with HTTP 422 because LMX cannot compile.
 6. **All attribute values are quoted strings.** Numbers and booleans are written as strings: `width="400"`, `notrack="true"`.
 7. **Top-level text and variables are invalid.** Wrap all text and variables in a block tag such as `<Paragraph>`.
 8. **Whitespace between block tags is ignored.** Indent and line-break freely.
@@ -160,7 +160,7 @@ Text content with variables allowed. Inline tags such as `<Strong>` and `<Link>`
 <Button href="https://app.example.com/users/{contact.userId}">Open profile</Button>
 ```
 
-Do not use the old `size` attribute; it is not supported by the current runtime.
+Do not use the old `size` attribute; it is not supported.
 
 ### 5.6 `<Image />`
 
@@ -185,7 +185,7 @@ Self-closing.
 <Image src="https://cdn.example.com/avatar-placeholder.png" dynamicSrc="{contact.avatarUrl}" alt="{contact.firstName}" />
 ```
 
-When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`. Public editor docs require dynamic images to be publicly accessible and to use an email-safe image extension such as `.jpg` or `.png`.
+When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`. Dynamic images must be publicly accessible and use an email-safe image extension such as `.jpg` or `.png`.
 
 ### 5.7 `<Divider />`
 
@@ -286,7 +286,7 @@ The exporter always emits the explicit child form. Components cannot nest inside
 </Component>
 ```
 
-The old `<ComponentContainer>` tag is not valid in the current runtime.
+The old `<ComponentContainer>` tag is not valid LMX.
 
 ### 5.12 `<Section>`
 
@@ -334,7 +334,7 @@ Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 </Icons>
 ```
 
-Common icon names include `twitter`, `instagram`, `linkedin`, `youtube`, `github`, `discord`, `envelope`, `link`, and `phone`. Unknown icon names are validation errors. Per-icon `color` is not supported by the current runtime.
+Common icon names include `twitter`, `instagram`, `linkedin`, `youtube`, `github`, `discord`, `envelope`, `link`, and `phone`. Unknown icon names are validation errors. Per-icon `color` is not supported.
 
 ### 5.14 `<Style />`
 
@@ -363,7 +363,7 @@ Self-closing top-level metadata. It does not render content. All attributes are 
 
 If `themeId` references a theme that already defines body/background colors, duplicate `bodyColor` and `backgroundColor` attributes are not required unless you want to override the theme. If `bodyColor` is omitted and the theme does not provide one, the `backgroundColor` is visible behind the email content instead of a distinct body/card surface.
 
-Do not use the old `styleTemplateId` attribute; the current LMX attribute is `themeId`.
+Do not use the old `styleTemplateId` attribute; the supported LMX attribute is `themeId`.
 
 ---
 
@@ -437,9 +437,9 @@ Variables are not valid:
 
 ### Fallback Values
 
-LMX does not currently have inline fallback syntax. Do not invent forms such as `{contact.firstName|there}`, `{contact.firstName:there}`, `{contact.firstName ?? "there"}`, or attributes like `fallback="there"`.
+LMX does not have inline fallback syntax. Do not invent forms such as `{contact.firstName|there}`, `{contact.firstName:there}`, `{contact.firstName ?? "there"}`, or attributes like `fallback="there"`.
 
-Fallbacks for contact properties are editor/email-message metadata outside the LMX string. The current LMX import/export path serializes only the variable reference itself:
+Fallbacks for contact properties are editor/email-message metadata outside the LMX string. The LMX import/export path serializes only the variable reference itself:
 
 ```xml
 <Paragraph>Hi {contact.firstName}</Paragraph>
