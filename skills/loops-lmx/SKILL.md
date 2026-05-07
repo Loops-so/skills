@@ -12,7 +12,7 @@ description: >
   intended for Loops. Do not trigger for questions about the Loops HTTP API,
   SDK integration, or CLI unless email body content is also involved.
 metadata:
-  version: 1.1.1
+  version: 1.1.2
 ---
 
 # LMX Skill
@@ -35,9 +35,10 @@ When this skill is active:
 
 1. Read `references/lmx-spec.md` for the full tag and attribute reference. It is authoritative — do not invent tags or attributes.
 2. Read `references/lmx-design-guidelines.md` for Loops design guidelines. Apply these to every document you generate unless the user explicitly overrides a rule.
-3. Validate nesting and content-type rules before producing output (see spec section 3).
-4. Check the common-mistakes table in the spec before finalizing output.
-5. Always produce a complete, valid document — not fragments, unless the user specifically asks for one.
+3. Use the public LMX baseline by default. Only use runtime-only/internal affordances when preserving existing exported LMX or when the user explicitly says they are working against Loops internals.
+4. Validate nesting and content-type rules before producing output (see spec section 3).
+5. Check the common-mistakes table in the spec before finalizing output.
+6. Always produce a complete, valid document — not fragments, unless the user specifically asks for one.
 
 ## Category Routing
 
@@ -54,13 +55,14 @@ Before returning any LMX output, verify:
 - [ ] All tags are PascalCase and in the allowed set
 - [ ] All self-closing tags use `/>` (e.g. `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`)
 - [ ] XML-sensitive characters are escaped: `&` as `&amp;`, `<` as `&lt;`, and `"` in attributes as `&quot;`
-- [ ] Required attrs are present, especially `src` on `<Image />` and `href` on `<Button>` and `<Link>`
+- [ ] Required attrs are present: `src` on `<Image />`, `componentId` on `<Component>`, `name` on `<Icon />`, and `href` on `<Link>`
+- [ ] Public Content API examples use campaign-safe variables: `{contact.name}` and `{system.unsubscribe_link}` only
+- [ ] Runtime-only details are not introduced in public examples: `<For>`, `{data.*}`, `{event.*}`, `emailAssetId`, `textFormat`, or `<Divider size>`
 - [ ] No text or inline tags at the top level
-- [ ] Variables use explicit LMX namespaces: `{contact.name}`, `{data.name}`, `{event.name}`, or `{system.name}`
-- [ ] Variables only appear where supported: inline content, button text, supported dynamic attrs, or `<For variable="{...}">`
+- [ ] Variables use explicit LMX namespaces and only appear where supported: inline content, button text, and supported dynamic attrs
 - [ ] No inline fallback syntax is invented; fallbacks live outside the LMX string
-- [ ] `<Button>` text has no inline tags, but can contain variables; `<CodeBlock>` treats braces literally
-- [ ] `<For variable="...">` uses braces, is prefixed, and contains at least one block child
+- [ ] `<Button>` text has no inline tags, but can contain variables; include `href` for clickable CTA buttons even though current public/runtime sources do not require it
+- [ ] `<CodeBlock>` treats braces literally
 - [ ] `<Style />` appears at most once as a top-level tag; put it first in generated output
 - [ ] Body/background colors are intentional: supplied by `themeId` or explicit `bodyColor`/`backgroundColor`
 - [ ] No same-color-on-same-color situations (check text vs block color, icon color vs background, etc.)

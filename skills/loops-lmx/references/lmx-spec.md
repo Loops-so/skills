@@ -1,9 +1,23 @@
-# LMX Specification
+# LMX Public Specification
 
-Source: Loops production LMX runtime (`lib/lmx/*`) and public editor docs.
-Synced on 2026-05-06.
+Primary source anchor: Loops PR `Loops-so/loops#8507`, `lib/lmx/spec.md`, last reviewed 2026-05-07.
+
+Cross-checked against current Loops `main`:
+
+- `lib/lmx/tags.ts`
+- `lib/lmx/parser.ts`
+- `lib/lmx/convertor.ts`
+- `lib/lmx/dynamic-variables.ts`
+- `lib/lmx/validator.ts`
+- `lib/createEmailMessageHTML.ts`
+- `lib/mjml/components/footer.ts`
+- public OpenAPI at `https://app.loops.so/openapi.json`
+
+Related Loops PRs checked: `#8162`, `#8195`, `#8196`, `#8268`, `#8276`, `#8281`, `#8282`, `#8283`, `#8288`, `#8299`, `#8314`, `#8320`, `#8353`, `#8366`, `#8393`, `#8395`, `#8453`, `#8455`, and `#8507`.
 
 LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
+
+The public source-of-truth is narrower than the current runtime. Current `main` contains some runtime-only or non-public affordances, including `<For>`, `{data.*}`, `{event.*}`, `emailAssetId`, `textFormat`, and `<Divider size>`. Do not introduce those in public Content API examples unless preserving existing exported/internal LMX.
 
 ---
 
@@ -13,7 +27,7 @@ LMX (Loops Markup Language) is an XML-based email content format for the Loops e
 2. **Self-closing tags must use `/>`.** Example: `<Image src="..." />`, `<Br />`, `<Divider />`.
 3. **Only documented tags are valid.** Unknown tags fail parsing.
 4. **Unknown attributes are warnings and have no effect.** Do not invent attributes.
-5. **Required attributes must be present.** For example, `<Image />` without `src` is invalid. Missing required attributes can make email-message updates fail with HTTP 422 because LMX cannot compile.
+5. **Required attributes must be present.** Public/current required attrs include `src` on `<Image />`, `componentId` on `<Component>`, `name` on `<Icon />`, and `href` on `<Link>`. Missing required attributes can make email-message updates fail with HTTP 422 because LMX cannot compile.
 6. **All attribute values are quoted strings.** Numbers and booleans are written as strings: `width="400"`, `notrack="true"`.
 7. **Top-level text and variables are invalid.** Wrap all text and variables in a block tag such as `<Paragraph>`.
 8. **Whitespace between block tags is ignored.** Indent and line-break freely.
@@ -30,7 +44,7 @@ A valid document contains zero or more top-level block tags, plus an optional si
 ```text
 H1, H2, H3, Paragraph, Quote, CodeBlock, Button, Image,
 Divider, OrderedList, UnorderedList, Columns, Component,
-For, Icons, Section, Style
+Icons, Section, Style
 ```
 
 Not valid at the top level:
@@ -66,9 +80,8 @@ Nesting summary:
 - `<CodeBlock>` -> raw literal text; variables are not parsed.
 - `<OrderedList>`, `<UnorderedList>` -> one or more `<ListItem>` children.
 - `<Columns>` -> exactly two `<ColumnItem>` children.
-- `<ColumnItem>` -> block tags, excluding `<Style>`.
+- `<ColumnItem>` -> block tags, excluding `<Style>`; do not generate nested columns for public examples.
 - `<Component>` -> block tags, excluding `<Style>` and nested `<Component>`.
-- `<For>` -> at least one block child; `<Style>` is not allowed inside.
 - `<Section>` -> block tags, excluding `<Style>` and nested `<Section>`.
 - `<Icons>` -> one to 100 `<Icon />` children.
 - Self-closing with no children: `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`.
@@ -147,7 +160,7 @@ Text content with variables allowed. Inline tags such as `<Strong>` and `<Link>`
 
 | Attribute | Type | Required | Notes |
 | --- | --- | :---: | --- |
-| `href` | url / dynamic string | yes | Supports variables |
+| `href` | url / dynamic string | | Supports variables; include it for clickable CTA buttons |
 | `bgColor`, `textColor`, `borderColor`, `blockColor` | hex color | | |
 | `borderRadius` | number | | 0-999 |
 | `borderWidth` | number | | 0-16 |
@@ -155,12 +168,11 @@ Text content with variables allowed. Inline tags such as `<Strong>` and `<Link>`
 | `fontSize` | number | | 6-64 |
 | `align` | enum | | `left`, `center`, `right` |
 | `notrack` | boolean | | `"true"` disables tracking for this link |
-| `textFormat` | number | | Format bitmask; use mainly when preserving exported LMX |
 | block style attrs | mixed | | Block background / padding |
 
 ```xml
 <Button href="https://loops.so/start" bgColor="#000000" textColor="#ffffff" borderRadius="12">Get started</Button>
-<Button href="https://app.example.com/orders/{data.orderId}">View order {data.orderId}</Button>
+<Button href="https://app.example.com/users/{contact.userId}">Open profile</Button>
 ```
 
 Do not use the old `size` attribute; it is not supported by the current runtime.
@@ -180,7 +192,6 @@ Self-closing.
 | `borderWidth` | number | | 0-16 |
 | `borderColor` | hex color | | |
 | `dynamicSrc` | url / dynamic string | | Use this for dynamic image URLs |
-| `emailAssetId` | string | | Loops-hosted asset id |
 | `notrack` | boolean | | |
 | block style attrs | mixed | | Block background / padding |
 
@@ -189,7 +200,7 @@ Self-closing.
 <Image src="https://cdn.example.com/avatar-placeholder.png" dynamicSrc="{contact.avatarUrl}" alt="{contact.firstName}" />
 ```
 
-When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`.
+When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`. Public editor docs require dynamic images to be publicly accessible and to use an email-safe image extension such as `.jpg` or `.png`.
 
 ### 5.7 `<Divider />`
 
@@ -201,12 +212,11 @@ Self-closing.
 | `width` | number | Percentage, 10-100 |
 | `borderWidth` | number | 1-16 |
 | `color` | hex color | |
-| `size` | enum | `small`, `medium`, `large` |
 | block style attrs | mixed | Block background / padding |
 
 ```xml
 <Divider />
-<Divider width="80" color="#cbd5e1" size="small" />
+<Divider width="80" color="#cbd5e1" />
 ```
 
 ### 5.8 `<Br />`
@@ -293,28 +303,9 @@ The exporter always emits the explicit child form. Components cannot nest inside
 
 The old `<ComponentContainer>` tag is not valid in the current runtime.
 
-### 5.12 `<For>`
+### 5.12 Runtime-Only Arrays
 
-Repeats block content for each item in an array. Must contain at least one block child.
-
-| Attribute | Type | Notes |
-| --- | --- | --- |
-| `variable` | variable expression | Must be a single braced, prefixed variable |
-
-Use arrays primarily for transactional data variables. Public editor docs currently describe arrays as transactional-email support.
-
-```xml
-<For variable="{data.products}">
-  <Paragraph>{data.products[].name} - {data.products[].price}</Paragraph>
-</For>
-```
-
-Accepted variable namespaces are `contact.`, `data.`, and `event.`:
-
-```xml
-<For variable="{contact.contacts}"><Paragraph>{contact.email}</Paragraph></For>
-<For variable="{event.items}"><Paragraph>{event.items[].name}</Paragraph></For>
-```
+Current Loops `main` has a `<For>` tag for array loops, and related PR `#8196` moved array variables to namespaced syntax. The public LMX source-of-truth in `#8507` excludes `<For>`, so do not generate it for public Content API examples. Only preserve or explain `<For>` when the user is working with existing exported/internal runtime LMX.
 
 ### 5.13 `<Section>`
 
@@ -376,7 +367,7 @@ Self-closing top-level metadata. It does not render content. All attributes are 
 | `borderColor`, `borderWidth`, `borderRadius` | string / number |
 | `buttonBodyColor`, `buttonBodyXPadding`, `buttonBodyYPadding` | string / number |
 | `buttonBorderColor`, `buttonBorderWidth`, `buttonBorderRadius` | string / number |
-| `buttonTextColor`, `buttonTextFormat`, `buttonTextFontSize` | string / number |
+| `buttonTextColor`, `buttonTextFontSize` | string / number |
 | `dividerColor`, `dividerBorderWidth` | string / number |
 | `textBaseColor`, `textBaseFontSize`, `textBaseLineHeight`, `textBaseLetterSpacing` | string / number |
 | `textLinkColor` | string |
@@ -428,16 +419,14 @@ All format tags plus `<Text>` accept optional `textColor`. It must be a 3- or 6-
 
 ## 7. Variables And Dynamic Content
 
-LMX variables use braced expressions. In the current runtime, production-safe LMX should use explicit namespaces:
+LMX variables use braced expressions. Public Content API writes currently target campaign email messages, so public examples should use contact properties and system variables only.
 
 | Syntax | Kind | Common email types |
 | --- | --- | --- |
-| `{contact.firstName}` | Contact property / merge tag | Campaigns and loop emails |
-| `{data.orderId}` | Data variable | Transactional emails |
-| `{event.plan}` | Event property | Event-triggered loop emails |
-| `{system.unsubscribe_link}` | System variable | System/footer usage |
+| `{contact.firstName}` | Contact property / merge tag | Campaign email messages |
+| `{system.unsubscribe_link}` | System variable | Unsubscribe URL when deliberately linking to the system unsubscribe URL |
 
-Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX. Legacy MJML/upload syntax still uses `{firstName}`, `{DATA_VARIABLE:name}`, and `{EVENT_PROPERTY:name}`, but LMX export converts those to `{contact.name}`, `{data.name}`, and `{event.name}`.
+Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX. Legacy MJML/upload syntax still uses `{firstName}`, `{DATA_VARIABLE:name}`, and `{EVENT_PROPERTY:name}`, but those are not LMX syntax for public Content API examples.
 
 Default contact properties currently include:
 
@@ -448,14 +437,7 @@ subscribed, createdAt
 
 Loops also has hidden/internal contact properties such as `__critical_audience`, `__marketing_audience`, and `__domain`; do not use those unless you are deliberately preserving exported content that already contains them. Custom contact properties are referenced by API name, for example `{contact.companyName}`.
 
-Data variable names may include dots, hyphens, underscores, brackets, and array notation:
-
-```xml
-<Paragraph>Order {data.order.id} total: {data.order-total}</Paragraph>
-<For variable="{data.products}">
-  <Paragraph>{data.products[].name}: {data.products[].price}</Paragraph>
-</For>
-```
+Current runtime can classify `{data.*}` and `{event.*}` variables, but PR `#8507` excludes transactional LMX write surfaces and event/data examples from the public baseline. Do not generate `{data.*}` or `{event.*}` in public LMX unless preserving existing exported/internal LMX.
 
 Variables are valid in:
 
@@ -466,20 +448,19 @@ Variables are valid in:
   - `<Link href="...">`
   - `<Image alt="..." href="..." dynamicSrc="...">`
   - `<Section href="...">`
-  - `<For variable="{...}">`
 
 Variables are not valid:
 
 - at the top level
 - inside `<CodeBlock>` (braces are literal)
-- inside unsupported attributes such as `<Image src="{data.url}" />`
+- inside unsupported attributes such as `<Image src="{contact.avatarUrl}" />`
 - unprefixed in validated LMX (`{firstName}` should be `{contact.firstName}`)
 
 ### Fallback Values
 
 LMX does not currently have inline fallback syntax. Do not invent forms such as `{contact.firstName|there}`, `{contact.firstName:there}`, `{contact.firstName ?? "there"}`, or attributes like `fallback="there"`.
 
-Fallbacks for contact properties, event properties, and data variables are editor/email-message metadata outside the LMX string. The current LMX import/export path serializes only the variable reference itself:
+Fallbacks for contact properties are editor/email-message metadata outside the LMX string. The current LMX import/export path serializes only the variable reference itself:
 
 ```xml
 <Paragraph>Hi {contact.firstName}</Paragraph>
@@ -500,23 +481,23 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 | `<paragraph>`, `<p>`, `<P>` | Use `<Paragraph>` |
 | `<Image src="x.png">` | Use `<Image src="x.png" />` |
 | `<Image />` | Add the required static `src`: `<Image src="https://..." />` |
-| `<Button>Click</Button>` | Add the required `href`: `<Button href="https://...">Click</Button>` |
+| CTA `<Button>` without `href` | Add `href` when the button should be clickable |
 | `<Link>docs</Link>` | Add the required `href`: `<Link href="https://...">docs</Link>` |
+| `<Component />` | Add the required `componentId`: `<Component componentId="cmp_123" />` |
+| `<Icon />` | Add the required `name`: `<Icon name="twitter" />` |
 | Plain text at top level | Wrap in `<Paragraph>...</Paragraph>` |
 | `<Strong>` at top level | Wrap in a block such as `<Paragraph>` |
 | `<Button><Strong>Click</Strong></Button>` | Button text cannot contain inline tags |
 | `{firstName}` in LMX | Use `{contact.firstName}` |
-| `{DATA_VARIABLE:id}` in LMX | Use `{data.id}` |
-| `{EVENT_PROPERTY:plan}` in LMX | Use `{event.plan}` |
+| `{DATA_VARIABLE:id}` or `{EVENT_PROPERTY:plan}` in public LMX | Do not use legacy MJML syntax; public LMX examples should use campaign-safe `{contact.apiName}` variables |
 | `{contact.firstName|there}` or similar fallback syntax | No inline fallback syntax exists in LMX; configure fallbacks outside the LMX string |
-| `<Image src="{data.imageUrl}" />` | Use static `src` plus `dynamicSrc="{data.imageUrl}"` |
+| `<Image src="{contact.imageUrl}" />` | Use static `src` plus `dynamicSrc="{contact.imageUrl}"` |
 | `<ComponentContainer>` | Use `<Component>` |
 | `<Style styleTemplateId="st_123" />` | Use `<Style themeId="st_123" />` |
 | `<Columns>` with one or three `<ColumnItem>` children | Use exactly two `<ColumnItem>` children |
 | `<Icon color="#f00" />` | Set `color` on `<Icons>` and use one of the allowed colors |
 | `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
-| `<For variable="data.products">` | Use braces: `<For variable="{data.products}">` |
-| `<For variable="{items}">` | Use a namespace: `{contact.items}`, `{data.items}`, or `{event.items}` |
+| `<For variable="{data.products}">` in public LMX | Do not generate `<For>` for public Content API examples; preserve it only for existing internal/runtime LMX |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
 | Hand-coded legal footer, address, or unsubscribe block | Omit it; Loops appends address and unsubscribe automatically |
@@ -528,35 +509,32 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 ```xml
 <Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" textBaseColor="#0f172a" />
 <H1>Welcome, {contact.firstName}</H1>
-<Paragraph fontSize="18" lineHeight="150" paddingBottom="16">
-  Thanks for signing up. Your order {data.order.id} is ready.
+<Paragraph fontSize="16" lineHeight="150">
+  Thanks for joining. Read <Link href="https://loops.so/docs">the docs</Link> to get started.
 </Paragraph>
 <UnorderedList>
-  <ListItem>Read <Link href="https://loops.so/docs">the docs</Link></ListItem>
-  <ListItem><Strong>Invite</Strong> your team</ListItem>
-  <ListItem>Explore <Em>integrations</Em></ListItem>
+  <ListItem>Create your first campaign</ListItem>
+  <ListItem>Add your audience</ListItem>
+  <ListItem>Send a test email</ListItem>
 </UnorderedList>
-<Button href="https://app.example.com/orders/{data.order.id}" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12" paddingTop="24" paddingBottom="24">View order {data.order.id}</Button>
-<Divider align="center" width="80" size="small" color="#cbd5e1" />
+<Button href="https://app.example.com/account/{contact.userId}" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12">Open account</Button>
+<Divider align="center" width="80" color="#cbd5e1" />
 <Columns gap="24" widths="50,50" verticalAlignment="top">
   <ColumnItem>
     <H3>Docs</H3>
     <Paragraph>Start with the quickstart.</Paragraph>
   </ColumnItem>
   <ColumnItem>
-    <Image src="https://cdn.example.com/product-placeholder.png" dynamicSrc="{data.productImageUrl}" alt="{data.productName}" />
+    <Image src="https://example.com/logo.png" alt="Company logo" width="180" />
   </ColumnItem>
 </Columns>
-<Section href="https://example.com/account/{contact.userId}" blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
-  <Paragraph>Review your account settings.</Paragraph>
+<Section blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
+  <Paragraph>Manage your subscription from your account settings.</Paragraph>
 </Section>
-<For variable="{data.products}">
-  <Paragraph>{data.products[].name}: {data.products[].price}</Paragraph>
-</For>
 <Icons align="center" gap="20" size="24" color="#000000">
   <Icon name="twitter" href="https://x.com/loops" />
-  <Icon name="github" href="https://github.com/loops" />
+  <Icon name="linkedin" href="https://www.linkedin.com/company/loops" />
 </Icons>
 <Quote fontSize="16">"Loops made our lifecycle emails effortless." - {contact.email}</Quote>
-<CodeBlock>curl -X POST https://app.loops.so/api/v1/events</CodeBlock>
+<CodeBlock>curl https://app.loops.so/api/v1/api-key</CodeBlock>
 ```

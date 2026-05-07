@@ -20,6 +20,7 @@
 - https://loops.so/docs/sdks/php
 - https://loops.so/docs/sdks/ruby
 - https://app.loops.so/openapi.json
+- https://github.com/Loops-so/loops/pull/8507
 
 ## Authentication
 
@@ -311,7 +312,7 @@ Use this for draft campaign email messages when setting subject, preview text, s
 }
 ```
 
-`fromEmail` is the sender username only, without `@` or a domain. The team's sending domain is appended automatically. LMX compile failures, including missing required LMX attributes, return HTTP 422.
+`fromEmail` is the sender username only, without `@` or a domain. The team's sending domain is appended automatically. LMX compile failures, including missing required public LMX attributes such as `<Image src>`, `<Component componentId>`, `<Icon name>`, or `<Link href>`, return HTTP 422.
 
 ---
 
@@ -460,7 +461,7 @@ curl -X POST https://app.loops.so/api/v1/contacts/create \
 | 400 | Bad request | Check required fields and value types |
 | 404 | Not found | Contact, transactional email, or email message ID does not exist |
 | 409 | Conflict | Email or userId already exists, idempotency key was reused, or `expectedRevisionId` is stale |
-| 422 | LMX failed to compile | Fix invalid LMX, missing required LMX attributes, or XML escaping |
+| 422 | LMX failed to compile | Fix invalid LMX, missing required public LMX attributes, or XML escaping |
 | 429 | Rate limited | Back off and retry |
 | CORS error | Client-side request | Move the API call to your server |
 
