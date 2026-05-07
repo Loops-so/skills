@@ -20,6 +20,7 @@ LMX (Loops Markup Language) is an XML-based email content format for the Loops e
 9. **Escape `<` and `&` in text** as `&lt;` and `&amp;`. Escape `"` and `&` in attribute values as `&quot;` and `&amp;`.
 10. **One `<Style />` tag maximum.** It is top-level metadata. Prefer putting it first; the exporter always emits it first.
 11. **Content API payload limit:** LMX sent through the email-message API must be at most 100 KB.
+12. **Do not add a manual footer by default.** Loops appends an email footer automatically.
 
 ---
 
@@ -30,7 +31,7 @@ A valid document contains zero or more top-level block tags, plus an optional si
 ```text
 H1, H2, H3, Paragraph, Quote, CodeBlock, Button, Image,
 Divider, OrderedList, UnorderedList, Columns, Component,
-For, Icons, Section, Style
+Icons, Section, Style
 ```
 
 Not valid at the top level:
@@ -68,7 +69,6 @@ Nesting summary:
 - `<Columns>` -> exactly two `<ColumnItem>` children.
 - `<ColumnItem>` -> block tags, excluding `<Style>`.
 - `<Component>` -> block tags, excluding `<Style>` and nested `<Component>`.
-- `<For>` -> at least one block child; `<Style>` is not allowed inside.
 - `<Section>` -> block tags, excluding `<Style>` and nested `<Section>`.
 - `<Icons>` -> one to 100 `<Icon />` children.
 - Self-closing with no children: `<Image />`, `<Divider />`, `<Br />`, `<Icon />`, `<Style />`.
@@ -180,7 +180,6 @@ Self-closing.
 | `borderWidth` | number | | 0-16 |
 | `borderColor` | hex color | | |
 | `dynamicSrc` | url / dynamic string | | Use this for dynamic image URLs |
-| `emailAssetId` | string | | Loops-hosted asset id |
 | `notrack` | boolean | | |
 | block style attrs | mixed | | Block background / padding |
 
@@ -201,12 +200,11 @@ Self-closing.
 | `width` | number | Percentage, 10-100 |
 | `borderWidth` | number | 1-16 |
 | `color` | hex color | |
-| `size` | enum | `small`, `medium`, `large` |
 | block style attrs | mixed | Block background / padding |
 
 ```xml
 <Divider />
-<Divider width="80" color="#cbd5e1" size="small" />
+<Divider align="center" width="80" borderWidth="1" color="#E5E7EB" />
 ```
 
 ### 5.8 `<Br />`
@@ -239,6 +237,24 @@ Lists must contain at least one `<ListItem>`. `<ListItem>` accepts inline conten
   <ListItem>First item</ListItem>
   <ListItem>Second item with <Strong>bold</Strong></ListItem>
 </OrderedList>
+```
+
+Use `<ListItem>` for list item content. It is only valid inside `<OrderedList>` and `<UnorderedList>`.
+
+`<ListItem>` supports inline content and these optional attributes:
+
+| Attribute | Type | Notes |
+| --- | --- | --- |
+| `fontSize` | number | |
+| `lineHeight` | number | Percentage value such as `"150"` |
+| block style attrs | mixed | Block background / padding |
+
+```xml
+<UnorderedList>
+  <ListItem fontSize="15" lineHeight="150" paddingBottom="8">
+    Use clear call-to-action labels.
+  </ListItem>
+</UnorderedList>
 ```
 
 ### 5.10 `<Columns>` and `<ColumnItem>`
@@ -293,30 +309,7 @@ The exporter always emits the explicit child form. Components cannot nest inside
 
 The old `<ComponentContainer>` tag is not valid in the current runtime.
 
-### 5.12 `<For>`
-
-Repeats block content for each item in an array. Must contain at least one block child.
-
-| Attribute | Type | Notes |
-| --- | --- | --- |
-| `variable` | variable expression | Must be a single braced, prefixed variable |
-
-Use arrays primarily for transactional data variables. Public editor docs currently describe arrays as transactional-email support.
-
-```xml
-<For variable="{data.products}">
-  <Paragraph>{data.products[].name} - {data.products[].price}</Paragraph>
-</For>
-```
-
-Accepted variable namespaces are `contact.`, `data.`, and `event.`:
-
-```xml
-<For variable="{contact.contacts}"><Paragraph>{contact.email}</Paragraph></For>
-<For variable="{event.items}"><Paragraph>{event.items[].name}</Paragraph></For>
-```
-
-### 5.13 `<Section>`
+### 5.12 `<Section>`
 
 Clickable or styled block container. Use sections to create layout cards, groups, or framed content areas around related blocks. Contains block tags. Sections cannot nest inside sections.
 
@@ -333,7 +326,7 @@ Clickable or styled block container. Use sections to create layout cards, groups
 </Section>
 ```
 
-### 5.14 `<Icons>` and `<Icon />`
+### 5.13 `<Icons>` and `<Icon />`
 
 Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 
@@ -358,13 +351,13 @@ Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 ```xml
 <Icons align="center" gap="20" size="24" color="#000000">
   <Icon name="twitter" href="https://x.com/loops" />
-  <Icon name="github" href="https://github.com/loops" />
+  <Icon name="github" href="https://github.com/loops-so" />
 </Icons>
 ```
 
 Common icon names include `twitter`, `instagram`, `linkedin`, `youtube`, `github`, `discord`, `envelope`, `link`, and `phone`. Unknown icon names are validation errors. Per-icon `color` is not supported by the current runtime.
 
-### 5.15 `<Style />`
+### 5.14 `<Style />`
 
 Self-closing top-level metadata. It does not render content. All attributes are optional. Use `themeId` for the current theme/style-template id.
 
@@ -433,8 +426,6 @@ LMX variables use braced expressions. In the current runtime, production-safe LM
 | Syntax | Kind | Common email types |
 | --- | --- | --- |
 | `{contact.firstName}` | Contact property / merge tag | Campaigns and loop emails |
-| `{data.orderId}` | Data variable | Transactional emails |
-| `{event.plan}` | Event property | Event-triggered loop emails |
 | `{system.unsubscribe_link}` | System variable | System/footer usage |
 
 Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX. Legacy MJML/upload syntax still uses `{firstName}`, `{DATA_VARIABLE:name}`, and `{EVENT_PROPERTY:name}`, but LMX export converts those to `{contact.name}`, `{data.name}`, and `{event.name}`.
@@ -466,7 +457,6 @@ Variables are valid in:
   - `<Link href="...">`
   - `<Image alt="..." href="..." dynamicSrc="...">`
   - `<Section href="...">`
-  - `<For variable="{...}">`
 
 Variables are not valid:
 
@@ -507,9 +497,7 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 | `<Style styleTemplateId="st_123" />` | Use `<Style themeId="st_123" />` |
 | `<Columns>` with one or three `<ColumnItem>` children | Use exactly two `<ColumnItem>` children |
 | `<Icon color="#f00" />` | Set `color` on `<Icons>` and use one of the allowed colors |
-| `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
-| `<For variable="data.products">` | Use braces: `<For variable="{data.products}">` |
-| `<For variable="{items}">` | Use a namespace: `{contact.items}`, `{data.items}`, or `{event.items}` |
+| `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#FFFFFF` |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
 
@@ -521,7 +509,7 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 <Style themeId="st_123" bodyColor="#ffffff" backgroundColor="#f1f5f9" bodyYPadding="24" textBaseColor="#0f172a" />
 <H1>Welcome, {contact.firstName}</H1>
 <Paragraph fontSize="18" lineHeight="150" paddingBottom="16">
-  Thanks for signing up. Your order {data.order.id} is ready.
+  Thanks for signing up. Your weekly summary is ready.
 </Paragraph>
 <UnorderedList>
   <ListItem>Read <Link href="https://loops.so/docs">the docs</Link></ListItem>
@@ -529,7 +517,7 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
   <ListItem>Explore <Em>integrations</Em></ListItem>
 </UnorderedList>
 <Button href="https://app.example.com/orders/{data.order.id}" align="center" bgColor="#0f172a" textColor="#ffffff" borderRadius="12" paddingTop="24" paddingBottom="24">View order {data.order.id}</Button>
-<Divider align="center" width="80" size="small" color="#cbd5e1" />
+<Divider align="center" width="80" borderWidth="1" color="#E5E7EB" />
 <Columns gap="24" widths="50,50" verticalAlignment="top">
   <ColumnItem>
     <H3>Docs</H3>
@@ -542,12 +530,9 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 <Section href="https://example.com/account/{contact.userId}" blockColor="#f8fafc" blockBorderRadius="12" paddingTop="16" paddingBottom="16">
   <Paragraph>Review your account settings.</Paragraph>
 </Section>
-<For variable="{data.products}">
-  <Paragraph>{data.products[].name}: {data.products[].price}</Paragraph>
-</For>
 <Icons align="center" gap="20" size="24" color="#000000">
   <Icon name="twitter" href="https://x.com/loops" />
-  <Icon name="github" href="https://github.com/loops" />
+  <Icon name="github" href="https://github.com/loops-so" />
 </Icons>
 <Quote fontSize="16">"Loops made our lifecycle emails effortless." - {contact.email}</Quote>
 <CodeBlock>curl -X POST https://app.loops.so/api/v1/events</CodeBlock>
