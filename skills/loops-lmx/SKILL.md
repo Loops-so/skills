@@ -67,3 +67,4 @@ Before returning any LMX output, verify:
 - [ ] `<Columns>` has exactly two `<ColumnItem>` children
 - [ ] Dynamic images use static `src` plus `dynamicSrc`, not variables in `src`
 - [ ] `<Icons color>` uses one of `#000000`, `#808080`, or `#ffffff`; `<Icon>` has no `color` attr
+- [ ] No legal footer, postal address, or unsubscribe block is added by hand; Loops adds required footer content automatically. A branded footer component can appear above it

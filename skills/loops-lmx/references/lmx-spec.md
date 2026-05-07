@@ -466,6 +466,7 @@ If a user asks for fallback behavior in LMX output, mention that the LMX markup 
 | `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
+| Manual legal footer, postal address, or unsubscribe block | Omit it; Loops adds required footer content automatically. A branded footer component can appear above it |
 
 ---
 
