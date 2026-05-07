@@ -1,23 +1,10 @@
 # LMX Public Specification
 
-Primary source anchor: Loops PR `Loops-so/loops#8507`, `lib/lmx/spec.md`, last reviewed 2026-05-07.
-
-Cross-checked against current Loops `main`:
-
-- `lib/lmx/tags.ts`
-- `lib/lmx/parser.ts`
-- `lib/lmx/convertor.ts`
-- `lib/lmx/dynamic-variables.ts`
-- `lib/lmx/validator.ts`
-- `lib/createEmailMessageHTML.ts`
-- `lib/mjml/components/footer.ts`
-- public OpenAPI at `https://app.loops.so/openapi.json`
-
-Related Loops PRs checked: `#8162`, `#8195`, `#8196`, `#8268`, `#8276`, `#8281`, `#8282`, `#8283`, `#8288`, `#8299`, `#8314`, `#8320`, `#8353`, `#8366`, `#8393`, `#8395`, `#8453`, `#8455`, and `#8507`.
+Synced on 2026-05-07.
 
 LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
 
-The public source-of-truth is narrower than the current runtime. Current `main` contains some runtime-only or non-public affordances, including `<For>`, `{data.*}`, `{event.*}`, `emailAssetId`, `textFormat`, and `<Divider size>`. Do not introduce those in public Content API examples unless preserving existing exported/internal LMX.
+This spec documents the public LMX authoring baseline. Some constructs are intentionally excluded from public examples, including `<For>`, `{data.*}`, `{event.*}`, `emailAssetId`, `textFormat`, and `<Divider size>`. Do not introduce those in public Content API examples unless preserving existing LMX that already uses them.
 
 ---
 
@@ -305,7 +292,7 @@ The old `<ComponentContainer>` tag is not valid in the current runtime.
 
 ### 5.12 Runtime-Only Arrays
 
-Current Loops `main` has a `<For>` tag for array loops, and related PR `#8196` moved array variables to namespaced syntax. The public LMX source-of-truth in `#8507` excludes `<For>`, so do not generate it for public Content API examples. Only preserve or explain `<For>` when the user is working with existing exported/internal runtime LMX.
+Some existing LMX can contain a `<For>` tag for array loops. Do not generate it for public Content API examples. Only preserve or explain `<For>` when editing existing LMX that already uses it.
 
 ### 5.13 `<Section>`
 
@@ -437,7 +424,7 @@ subscribed, createdAt
 
 Loops also has hidden/internal contact properties such as `__critical_audience`, `__marketing_audience`, and `__domain`; do not use those unless you are deliberately preserving exported content that already contains them. Custom contact properties are referenced by API name, for example `{contact.companyName}`.
 
-Current runtime can classify `{data.*}` and `{event.*}` variables, but PR `#8507` excludes transactional LMX write surfaces and event/data examples from the public baseline. Do not generate `{data.*}` or `{event.*}` in public LMX unless preserving existing exported/internal LMX.
+Some existing LMX can contain `{data.*}` and `{event.*}` variables. Do not generate them in public Content API examples unless preserving existing LMX that already uses them.
 
 Variables are valid in:
 

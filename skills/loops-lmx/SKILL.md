@@ -35,7 +35,7 @@ When this skill is active:
 
 1. Read `references/lmx-spec.md` for the full tag and attribute reference. It is authoritative — do not invent tags or attributes.
 2. Read `references/lmx-design-guidelines.md` for Loops design guidelines. Apply these to every document you generate unless the user explicitly overrides a rule.
-3. Use the public LMX baseline by default. Only use runtime-only/internal affordances when preserving existing exported LMX or when the user explicitly says they are working against Loops internals.
+3. Use the public LMX baseline by default. Preserve non-public constructs only when editing existing LMX that already uses them.
 4. Validate nesting and content-type rules before producing output (see spec section 3).
 5. Check the common-mistakes table in the spec before finalizing output.
 6. Always produce a complete, valid document — not fragments, unless the user specifically asks for one.

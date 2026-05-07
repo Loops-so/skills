@@ -20,7 +20,6 @@
 - https://loops.so/docs/sdks/php
 - https://loops.so/docs/sdks/ruby
 - https://app.loops.so/openapi.json
-- https://github.com/Loops-so/loops/pull/8507
 
 ## Authentication
 
