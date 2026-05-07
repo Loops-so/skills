@@ -4,8 +4,6 @@ Synced on 2026-05-07.
 
 LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
 
-This spec documents the public LMX authoring baseline. Some constructs are intentionally excluded from public examples, including `<For>`, `{data.*}`, `{event.*}`, `emailAssetId`, `textFormat`, and `<Divider size>`. Do not introduce those in public Content API examples unless preserving existing LMX that already uses them.
-
 ---
 
 ## 1. Core Rules
@@ -67,7 +65,7 @@ Nesting summary:
 - `<CodeBlock>` -> raw literal text; variables are not parsed.
 - `<OrderedList>`, `<UnorderedList>` -> one or more `<ListItem>` children.
 - `<Columns>` -> exactly two `<ColumnItem>` children.
-- `<ColumnItem>` -> block tags, excluding `<Style>`; do not generate nested columns for public examples.
+- `<ColumnItem>` -> block tags, excluding `<Style>`.
 - `<Component>` -> block tags, excluding `<Style>` and nested `<Component>`.
 - `<Section>` -> block tags, excluding `<Style>` and nested `<Section>`.
 - `<Icons>` -> one to 100 `<Icon />` children.
@@ -290,11 +288,7 @@ The exporter always emits the explicit child form. Components cannot nest inside
 
 The old `<ComponentContainer>` tag is not valid in the current runtime.
 
-### 5.12 Runtime-Only Arrays
-
-Some existing LMX can contain a `<For>` tag for array loops. Do not generate it for public Content API examples. Only preserve or explain `<For>` when editing existing LMX that already uses it.
-
-### 5.13 `<Section>`
+### 5.12 `<Section>`
 
 Clickable or styled block container. Use sections to create layout cards, groups, or framed content areas around related blocks. Contains block tags. Sections cannot nest inside sections.
 
@@ -311,7 +305,7 @@ Clickable or styled block container. Use sections to create layout cards, groups
 </Section>
 ```
 
-### 5.14 `<Icons>` and `<Icon />`
+### 5.13 `<Icons>` and `<Icon />`
 
 Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 
@@ -342,7 +336,7 @@ Social/icon row. `<Icons>` must contain one to 100 `<Icon />` children.
 
 Common icon names include `twitter`, `instagram`, `linkedin`, `youtube`, `github`, `discord`, `envelope`, `link`, and `phone`. Unknown icon names are validation errors. Per-icon `color` is not supported by the current runtime.
 
-### 5.15 `<Style />`
+### 5.14 `<Style />`
 
 Self-closing top-level metadata. It does not render content. All attributes are optional. Use `themeId` for the current theme/style-template id.
 
@@ -406,14 +400,14 @@ All format tags plus `<Text>` accept optional `textColor`. It must be a 3- or 6-
 
 ## 7. Variables And Dynamic Content
 
-LMX variables use braced expressions. Public Content API writes currently target campaign email messages, so public examples should use contact properties and system variables only.
+LMX variables use braced expressions with explicit namespaces.
 
 | Syntax | Kind | Common email types |
 | --- | --- | --- |
 | `{contact.firstName}` | Contact property / merge tag | Campaign email messages |
 | `{system.unsubscribe_link}` | System variable | Unsubscribe URL when deliberately linking to the system unsubscribe URL |
 
-Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX. Legacy MJML/upload syntax still uses `{firstName}`, `{DATA_VARIABLE:name}`, and `{EVENT_PROPERTY:name}`, but those are not LMX syntax for public Content API examples.
+Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX.
 
 Default contact properties currently include:
 
@@ -422,15 +416,13 @@ firstName, lastName, email, notes, source, userGroup, userId,
 subscribed, createdAt
 ```
 
-Loops also has hidden/internal contact properties such as `__critical_audience`, `__marketing_audience`, and `__domain`; do not use those unless you are deliberately preserving exported content that already contains them. Custom contact properties are referenced by API name, for example `{contact.companyName}`.
-
-Some existing LMX can contain `{data.*}` and `{event.*}` variables. Do not generate them in public Content API examples unless preserving existing LMX that already uses them.
+Custom contact properties are referenced by API name, for example `{contact.companyName}`.
 
 Variables are valid in:
 
 - inline content: headings, paragraphs, quotes, list items, and inline tags
 - button text
-- dynamic attributes declared by the runtime:
+- supported dynamic attributes:
   - `<Button href="...">`
   - `<Link href="...">`
   - `<Image alt="..." href="..." dynamicSrc="...">`
@@ -476,7 +468,6 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 | `<Strong>` at top level | Wrap in a block such as `<Paragraph>` |
 | `<Button><Strong>Click</Strong></Button>` | Button text cannot contain inline tags |
 | `{firstName}` in LMX | Use `{contact.firstName}` |
-| `{DATA_VARIABLE:id}` or `{EVENT_PROPERTY:plan}` in public LMX | Do not use legacy MJML syntax; public LMX examples should use campaign-safe `{contact.apiName}` variables |
 | `{contact.firstName|there}` or similar fallback syntax | No inline fallback syntax exists in LMX; configure fallbacks outside the LMX string |
 | `<Image src="{contact.imageUrl}" />` | Use static `src` plus `dynamicSrc="{contact.imageUrl}"` |
 | `<ComponentContainer>` | Use `<Component>` |
@@ -484,7 +475,6 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 | `<Columns>` with one or three `<ColumnItem>` children | Use exactly two `<ColumnItem>` children |
 | `<Icon color="#f00" />` | Set `color` on `<Icons>` and use one of the allowed colors |
 | `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
-| `<For variable="{data.products}">` in public LMX | Do not generate `<For>` for public Content API examples; preserve it only for existing internal/runtime LMX |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
 | Hand-coded legal footer, address, or unsubscribe block | Omit it; Loops appends address and unsubscribe automatically |
