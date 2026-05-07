@@ -1,8 +1,6 @@
 # LMX Specification
 
-Synced on 2026-05-07.
-
-LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
+LMX (Loops Markup Language) is an XML-based email content format for the Loops editor and Content API. Every element is a PascalCase tag; there is no Markdown or HTML shorthand.
 
 ---
 
@@ -186,7 +184,7 @@ Self-closing.
 <Image src="https://cdn.example.com/avatar-placeholder.png" dynamicSrc="{contact.avatarUrl}" alt="{contact.firstName}" />
 ```
 
-When using the content API, static `src` images must be hosted on an allowed Loops image host. For externally hosted dynamic images, keep the static `src` as a placeholder and put the dynamic URL in `dynamicSrc`. Dynamic images must be publicly accessible and use an email-safe image extension such as `.jpg` or `.png`.
+Use a static `src` for the placeholder or Loops-hosted image. For externally hosted dynamic images, keep `src` static and put the dynamic URL in `dynamicSrc`. Dynamic images must be publicly accessible and use an email-safe image extension such as `.jpg` or `.png`.
 
 ### 5.7 `<Divider />`
 
@@ -404,7 +402,7 @@ LMX variables use braced expressions with explicit namespaces.
 | `{contact.firstName}` | Contact property / merge tag | Campaign email messages |
 | `{system.unsubscribe_link}` | System variable | Unsubscribe URL when deliberately linking to the system unsubscribe URL |
 
-Bare variables such as `{firstName}` parse as contact properties but fail validation in production API paths that validate references. Prefer `{contact.firstName}` for LMX.
+Use explicit contact-property syntax such as `{contact.firstName}` in LMX.
 
 Default contact properties currently include:
 
@@ -444,10 +442,6 @@ Fallbacks for contact properties are editor/email-message metadata outside the L
 
 If a user asks for fallback behavior in LMX output, mention that the LMX markup can reference the variable, but fallback values must be configured through the Loops editor or metadata path that owns the email message fallbacks.
 
-### Footer Behavior
-
-Do not hand-code the legal footer, address, or unsubscribe block in LMX content. Loops appends address and unsubscribe automatically. A team's branded footer component is fine above the auto-footer.
-
 ---
 
 ## 8. Common Mistakes
@@ -472,7 +466,6 @@ Do not hand-code the legal footer, address, or unsubscribe block in LMX content.
 | `<Icons color="#334155">` | Use `#000000`, `#808080`, or `#ffffff` |
 | Two `<Style />` tags | Use only one |
 | Unescaped `<` or `&` in text | Use `&lt;` and `&amp;` |
-| Hand-coded legal footer, address, or unsubscribe block | Omit it; Loops appends address and unsubscribe automatically |
 
 ---
 

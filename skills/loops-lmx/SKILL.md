@@ -3,14 +3,14 @@ name: loops-lmx
 description: >
   Use this skill whenever the user wants to create, write, generate, or edit
   email content in Loops. This includes composing campaigns, loops, lifecycle
-  emails, transactional email bodies, or any email template for the Loops
-  editor or API. LMX (Loops Markup Language) is the format used for all Loops
-  email content. Trigger on phrases like "create a campaign", "generate an
+  emails, or email-message bodies for the Loops editor or Content API. LMX
+  (Loops Markup Language) is the format used for Loops email content. Trigger
+  on phrases like "create a campaign", "generate an
   email", "write a welcome email", "draft a lifecycle email", "build an email
-  template", "write a transactional email body", "create an onboarding email",
-  "LMX", "Loops email", or any request to produce or modify email body content
-  intended for Loops. Do not trigger for questions about the Loops HTTP API,
-  SDK integration, or CLI unless email body content is also involved.
+  template", "create an onboarding email", "LMX", "Loops email", or any
+  request to produce or modify email body content intended for Loops. Do not
+  trigger for questions about the Loops HTTP API, SDK integration, or CLI unless
+  email body content is also involved.
 metadata:
   version: 1.1.2
 ---
@@ -56,7 +56,7 @@ Before returning any LMX output, verify:
 - [ ] XML-sensitive characters are escaped: `&` as `&amp;`, `<` as `&lt;`, and `"` in attributes as `&quot;`
 - [ ] Required attrs are present: `src` on `<Image />`, `componentId` on `<Component>`, `name` on `<Icon />`, and `href` on `<Link>`
 - [ ] No text or inline tags at the top level
-- [ ] Variables use explicit LMX namespaces and only appear where supported: inline content, button text, and supported dynamic attrs
+- [ ] Variables use explicit LMX namespaces and only appear where supported: inline content, button text, `<Button href>`, `<Link href>`, `<Image alt/href/dynamicSrc>`, and `<Section href>`
 - [ ] No inline fallback syntax is invented; fallbacks live outside the LMX string
 - [ ] `<Button>` text has no inline tags, but can contain variables; include `href` for clickable CTA buttons
 - [ ] `<CodeBlock>` treats braces literally
@@ -67,4 +67,3 @@ Before returning any LMX output, verify:
 - [ ] `<Columns>` has exactly two `<ColumnItem>` children
 - [ ] Dynamic images use static `src` plus `dynamicSrc`, not variables in `src`
 - [ ] `<Icons color>` uses one of `#000000`, `#808080`, or `#ffffff`; `<Icon>` has no `color` attr
-- [ ] No hand-coded legal footer, address, or unsubscribe block; Loops appends those automatically. A branded team footer component can appear above the auto-footer
